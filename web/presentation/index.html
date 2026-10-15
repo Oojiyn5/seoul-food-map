@@ -313,6 +313,26 @@
 <p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 11</p>
 <aside>네 번째는 자연어 검색입니다. 질문 문장과 가게 블로그 글을 같은 e5 임베딩 공간에 놓고 가까운 순으로 찾습니다. 처음엔 의미 유사도만 썼는데, 블로그 글이 두루뭉술한 몇몇 가게가 어떤 질문에든 위로 올라왔습니다. 그래서 질문 단어가 가게 키워드와 맞거나, 주차나 반려견 같은 조건이 가게 정보와 맞으면 가산점을 주는 하이브리드 방식으로 바꿨습니다. 회식 고기집을 검색하면 고깃집들이, 반려견 동반 브런치를 검색하면 브런치 카페들이 나옵니다.</aside>
 </section>
+<section id="searchdemo" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:44px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:700;color:#c2410c">④ 말로 검색 · 실제 화면</p>
+<h2 style="font-size:64px;font-weight:800;line-height:1.2;letter-spacing:-2px">“분위기 좋은 술집”을 검색하면</h2>
+</div>
+<div style="display:flex;gap:48px">
+<img src="ai-search.png" alt="AI 검색 화면: '분위기 좋은 술집' 검색 결과 30곳이 목록과 지도에 표시되고, 1위는 코블러 연희" style="width:1180px;height:630px;object-fit:contain;background:#efe9e1;border-radius:20px">
+<div style="flex:1;display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;flex-direction:column;gap:6px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:18px;padding:24px 26px">
+<p style="font-size:26px;color:#57534e">1위</p>
+<p style="font-size:34px;font-weight:800">코블러 연희</p>
+<p style="font-size:26px;color:#57534e">★4.7 · 키워드 ‘술집’</p>
+</div>
+<p style="font-size:28px;line-height:1.5;color:#57534e">의미가 가까운 30곳을 목록과 지도에 함께 표시</p>
+<p style="font-size:28px;line-height:1.5;color:#57534e">e5 모델을 브라우저에서 실행해 서버 없이 동작</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 12</p>
+<aside>실제로 배포한 지도에서 검색한 화면입니다. AI 검색을 켜고 '분위기 좋은 술집'을 입력하면, 블로그 글의 의미가 가까운 30곳이 목록과 지도에 함께 나옵니다. 1위는 블로그 키워드에 '술집'이 있는 코블러 연희입니다. 이 검색은 서버 없이 브라우저 안에서 e5 모델을 내려받아 돌립니다. 처음 한 번은 모델을 받느라 조금 기다려야 합니다.</aside>
+</section>
 <section id="rating" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:52px">
 <div style="display:flex;flex-direction:column;gap:16px">
 <p style="font-size:28px;font-weight:700;color:#c2410c">⑤ 평점 보정 · 방문 정보</p>
@@ -342,7 +362,7 @@
 </div>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 12</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 13</p>
 <aside>다섯 번째는 평점 보정입니다. 리뷰가 적은 가게의 평점을 연희동 평균 쪽으로 당기는 베이지안 평균을 썼습니다. 리뷰 3개에 5점인 가게는 4.32점이 되고, 리뷰가 1,144개인 가게는 거의 그대로입니다. 그리고 실제로 갈 때 필요한 예약 방법, 웨이팅, 주차 정보를 블로그와 구글에서 모았습니다. 이 과정에서 인허가 데이터에는 아직 영업 중으로 남아 있지만 실제로는 2022년에 문을 닫은 목란을 찾아내서 경고를 붙였습니다.</aside>
 </section>
 <section id="demo" data-transition="fade" style="background:#1c1917;color:#f7f4ef;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:48px">
@@ -391,7 +411,7 @@
 </div>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 14</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 15</p>
 <aside>한계도 분명합니다. 인허가 정보만으로는 폐업을 어느 정도까지만 예측할 수 있고, 블로그는 긍정 편향이 강합니다. 흔한 상호는 다른 가게 글이 섞이고, 예약 정보는 바뀔 수 있습니다. 배운 점도 있습니다. 처음 생존모델을 만들었을 때 모든 가게의 위험이 100%로 나왔는데, 관찰이 끝나지 않은 마지막 구간에서 폐업한 가게만 남는 선택 편향 때문이었습니다. 또 1990년 이전 개업 가게는 일찍 폐업한 곳의 기록이 없어서 생존기간이 부풀려진다는 것도 EDA에서 발견했습니다. 감성분석처럼 모델이 정확해도 데이터 자체의 편향은 검증해야만 보인다는 걸 배웠습니다.</aside>
 </section>
 <section id="end" data-transition="fade" style="display:flex; flex-direction:column; gap:40px; justify-content:center; padding:128px; background:#1c1917">
