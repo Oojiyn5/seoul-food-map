@@ -1,0 +1,18 @@
+# API 키
+.streamlit/
+api.xlsx
+*.xlsx
+
+# 원본·중간 데이터 (용량이 크고, 블로그 글 원문이 들어 있음)
+data/
+*.csv
+analysis/checkpoints/
+
+# 블로그 글 예시가 들어 있는 로그
+analysis/output/blog_nlp_summary.txt
+analysis/output/shop_info_summary.txt
+
+# 기타
+__pycache__/
+*.pyc
+/스크린샷*.png
