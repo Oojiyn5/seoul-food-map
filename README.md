@@ -4,6 +4,8 @@
 
 상명대학교 전기공학전공 202410929 유지연
 
+교양수업 ‘세계음식컨텐츠’에서 만든 연희동 중식당 지도를, 이번 ‘에너지 시스템 AI’ 수업에서 연희동 모든 식당과 AI 모델(생존 예측·감성분석·의미 검색·평점 보정)로 확장한 프로젝트다.
+
 - **지도:** https://oojiyn5.github.io/yeonhui-food-map/
 - **발표 자료:** https://oojiyn5.github.io/yeonhui-food-map/presentation/ (←/→ 넘기기, N 발표자 노트) · [PDF](web/presentation/yeonhui-food-map-presentation.pdf)
 
