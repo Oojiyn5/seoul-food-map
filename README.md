@@ -141,5 +141,9 @@ py survival_model.py; py blog_nlp.py; py shop_info.py
   - 블로그 주제 필터: 전체 글 평균과 유사도 하위 2%(746건, 전시회·건물 경매 기사 등)는 감성·키워드·검색에서 제외
   - 상호 처리에서 "주식회사/(주)/㈜" 제거(법인 상호 8곳 매칭 개선). 짧은 상호(44곳)는 키워드 숨김
   - 남은 한계: "제이에이치(JH)"는 다른 회사 글이 섞여 키워드가 엉뚱함
-- [ ] 실제 브라우저에서 AI 검색·모바일 화면 확인 → GitHub Pages 배포 (`web/` 폴더만 올리면 됨. `.streamlit/secrets.toml`·원본 CSV는 올리지 말 것)
+- [x] GitHub 배포 (2026-10-15): https://github.com/Oojiyn5/yeonhui-food-map (공개 저장소)
+  - `main`에 push하면 GitHub Actions(`.github/workflows/pages.yml`)가 `web/`을 Pages에 배포
+  - 키·데이터는 `.gitignore`로 제외: `.streamlit/`, `*.xlsx`, `data/`, `*.csv`, `analysis/checkpoints/`, 블로그 예문이 든 로그
+  - 발표 자료: 슬라이드 덱(claude.ai 아티팩트)을 `web/presentation/index.html`(독립 뷰어)과 PDF로 변환해 함께 배포
+- [ ] 실제 브라우저에서 AI 검색·모바일 화면 확인
 - [ ] (선택) ② 행정처분 분류(연희동은 처분 0건이라 우선순위 낮음), 네이버 지역 검색 API로 세부 업종 보충
