@@ -9,9 +9,9 @@
   html, body { margin: 0; height: 100%; background: #0f0e0d; font-family: 'Noto Sans KR', Arial, sans-serif; }
   .stage { position: fixed; inset: 0; display: grid; place-items: center; overflow: hidden; }
   section { position: absolute; width: 1920px; height: 1080px; box-sizing: border-box; overflow: hidden;
-             transform-origin: center center; display: none !important; word-break: keep-all; }
-  section.on { display: flex !important; }
-  section[style*="display:grid"].on { display: grid !important; }
+             transform-origin: center center; display: none; word-break: keep-all; }
+  section.on { display: flex; }
+  section[style*="display:grid"].on { display: grid; }
   section p, section h1, section h2, section h3, section ul { margin: 0; }
   section ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 10px; }
   section table { border-collapse: separate; border-spacing: 0; width: 100%; overflow: hidden; }
@@ -318,18 +318,18 @@
 </div>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:18px">
-<p style="font-size:26px;color:#57534e">시험 질문과 상위 결과 (연희동 386곳 기준)</p>
+<p style="font-size:26px;color:#57534e">시험 질문과 상위 결과 (6개 상권 5,137곳 기준)</p>
 <div style="display:flex;flex-direction:column;gap:6px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:18px;padding:26px 30px">
 <p style="font-size:30px;font-weight:700">“회식 고기집”</p>
-<p style="font-size:28px;color:#57534e">왕소금구이 · 한우명가 · 꼬들집</p>
+<p style="font-size:28px;color:#57534e">왕소금구이(연희) · 고기랑(신촌) · 상고집(상수)</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:6px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:18px;padding:26px 30px">
 <p style="font-size:30px;font-weight:700">“반려견 동반 브런치”</p>
-<p style="font-size:28px;color:#57534e">니바 하우스 · 산스 · 미미에토</p>
+<p style="font-size:28px;color:#57534e">미미에토(연희) · 니바 하우스(연희) · 히포 브런치하우스(연남)</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:6px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:18px;padding:26px 30px">
 <p style="font-size:30px;font-weight:700">“비 오는 날 짬뽕”</p>
-<p style="font-size:28px;color:#57534e">박가네짬뽕 · 황금성</p>
+<p style="font-size:28px;color:#57534e">박가네짬뽕(연희) · 짬뽕지존 홍대점(홍대) · 맛짬뽕(상수)</p>
 </div>
 </div>
 </div>
@@ -433,6 +433,23 @@
 </div>
 <aside>이제 실제 지도를 보여드리겠습니다. 시연 순서는 이렇게 하면 좋습니다. 첫째, 추천순 목록과 지도 색깔을 보여줍니다. 둘째, 가게 하나를 눌러 맛·생존력·호불호 점수와 생존력 요인, 예약 근거 글을 보여줍니다. 셋째, 지금 영업 중과 주차 필터를 켭니다. 넷째, AI 검색을 켜고 '회식 고기집'을 검색합니다. 다섯째, 위쪽 탭에서 서울 전체를 눌러 구별 생존력을 보여줍니다. 마지막으로 분석 방법 창을 열어 검증 수치를 보여줍니다.</aside>
 </section>
+<section id="seoulview" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:44px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:700;color:#c2410c">데모 · 서울 전체</p>
+<h2 style="font-size:64px;font-weight:800;line-height:1.2;letter-spacing:-2px">서울 118,351곳의 생존력을 한눈에</h2>
+</div>
+<div style="display:flex;gap:48px">
+<img src="seoul-view.png" alt="서울 전체 보기: 약 500m 격자로 생존력 중앙값을 파란색 4단계로 칠한 서울 지도와 구 25곳 생존력 순위 목록" style="width:1120px;height:630px;object-fit:contain;background:#efe9e1;border-radius:20px">
+<div style="flex:1;display:flex;flex-direction:column;gap:22px">
+<p style="font-size:30px;line-height:1.45;color:#57534e">멀리서는 약 500m 격자의 생존력 중앙값</p>
+<p style="font-size:30px;line-height:1.45;color:#57534e">구 25곳을 생존력 중앙값 순으로 요약</p>
+<p style="font-size:30px;line-height:1.45;color:#57534e">확대하면 가게 하나하나와 행정처분 이력</p>
+<p style="font-size:30px;line-height:1.45;color:#57534e">점선 안은 AI 분석 지역 6개 상권</p>
+</div>
+</div>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 17</p>
+<aside>위쪽 탭에서 서울 전체를 누르면 나오는 화면입니다. 서울 영업 중 식당 11만 8천 곳의 3년 생존력을 약 500미터 격자로 요약해서 칠했고, 진한 파란색일수록 생존력이 높습니다. 왼쪽 목록은 구 25곳을 생존력 중앙값 순으로 보여줍니다. 지도를 확대하면 가게 하나하나가 나오고, 주황색 점선 안이 맛·호불호·AI 검색까지 분석한 6개 상권입니다.</aside>
+</section>
 <section id="limits" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:52px">
 <div style="display:flex;flex-direction:column;gap:16px">
 <p style="font-size:28px;font-weight:700;color:#c2410c">한계와 배운 점</p>
@@ -463,7 +480,7 @@
 </div>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 17</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 18</p>
 <aside>한계도 분명합니다. 인허가 정보만으로는 폐업을 어느 정도까지만 예측할 수 있고, 블로그는 긍정 편향이 강하고, 구글 평점은 무료 한도 때문에 일부 가게만 받아서 나머지 맛 점수는 블로그로 추정했는데 순위상관이 0.34로 약합니다. 흔한 상호는 다른 가게 글이 섞이고, 예약 정보는 바뀔 수 있습니다. 배운 점도 있습니다. 처음 생존모델을 만들었을 때 모든 가게의 위험이 100%로 나왔는데, 관찰이 끝나지 않은 마지막 구간에서 폐업한 가게만 남는 선택 편향 때문이었습니다. 또 1990년 이전 개업 가게는 일찍 폐업한 곳의 기록이 없어서 생존기간이 부풀려진다는 것도 EDA에서 발견했습니다. 감성분석처럼 모델이 정확해도 데이터 자체의 편향은 검증해야만 보인다는 걸 배웠습니다.</aside>
 </section>
 <section id="end" data-transition="fade" style="display:flex; flex-direction:column; gap:40px; justify-content:center; padding:128px; background:#1c1917">
