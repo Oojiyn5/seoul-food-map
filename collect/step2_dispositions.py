@@ -1,4 +1,4 @@
-"""2단계: 식약처 행정처분결과(식품접객업, 서비스ID I2630) 수집 → 서울만 저장 → 연희동 식당과 매칭.
+"""2단계: 식약처 행정처분결과(식품접객업, 서비스ID I2630) 수집 → 서울만 저장 → 서울 영업 중 식당과 매칭.
 
 사전 준비:
   식품안전나라(https://www.foodsafetykorea.go.kr/api/) 회원가입 → 인증키 발급
@@ -7,7 +7,7 @@
 출력:
   data/raw/dispositions_raw.json      전국 원본 (재실행 시 재사용, --refresh 로 갱신)
   data/seoul_dispositions.csv         서울 처분 이력
-  data/yeonhui_dispositions.csv       연희동 식당과 매칭된 처분 이력 (mgt_no 포함)
+  data/seoul_dispositions_matched.csv 서울 영업 중 식당과 매칭된 처분 이력 (mgt_no 포함)
 
 주의: 공개기한이 지난 처분은 지도에 표시하지 않는다(식품위생법상 공표기간).
 """
@@ -17,7 +17,7 @@ import sys
 
 import pandas as pd
 
-from common import DATA, RAW, TARGET_GU, get_json, secret
+from common import DATA, RAW, get_json, secret
 
 SERVICE = "I2630"
 PAGE = 1000  # API 1회 최대 건수
@@ -87,19 +87,21 @@ def main():
     seoul.to_csv(DATA / "seoul_dispositions.csv", index=False, encoding="utf-8-sig")
     print(f"서울 처분: {len(seoul):,}건")
 
-    # 연희동 식당과 매칭: 같은 구 + 상호 일치, 동명 업소가 여럿이면 도로명 주소로 고른다
-    shops = pd.read_csv(DATA / "yeonhui_restaurants.csv", dtype=str)
+    # 서울 영업 중 식당과 매칭: 같은 구 + 상호 일치, 동명 업소가 여럿이면 도로명 주소로 고른다
+    shops = pd.read_csv(DATA / "seoul_restaurants.csv", dtype=str, low_memory=False)
+    shops = shops[shops["closed"] == "0"].copy()
     shops["key"] = shops["name"].map(norm_name)
-    gu = seoul[seoul[addr_col].str.contains(TARGET_GU, na=False)].copy()
-    gu["key"] = gu[name_col].map(norm_name)
-    matched = gu.merge(shops[["mgt_no", "name", "addr_jibun", "addr_road", "key"]], on="key", how="inner")
+    shops["gu"] = shops["addr_jibun"].fillna(shops["addr_road"]).str.extract(r"서울특별시\s+(\S+구)")[0]
+    seoul["key"] = seoul[name_col].map(norm_name)
+    seoul["gu"] = seoul[addr_col].str.extract(r"서울특별시\s+(\S+구)")[0]
+    matched = seoul.merge(shops[["mgt_no", "name", "addr_jibun", "addr_road", "key", "gu"]], on=["gu", "key"], how="inner")
     matched["addr_match"] = matched[addr_col].map(road_key) == matched["addr_road"].map(road_key)
     n_cand = matched.groupby("DSPSDTLS_SEQ")["mgt_no"].transform("nunique")
     any_addr = matched.groupby("DSPSDTLS_SEQ")["addr_match"].transform("any")
     matched = matched[(n_cand == 1) | matched["addr_match"] | ~any_addr]
 
-    matched.to_csv(DATA / "yeonhui_dispositions.csv", index=False, encoding="utf-8-sig")
-    print(f"{TARGET_GU} 처분 {len(gu):,}건 중 연희동 식당과 매칭 {len(matched):,}건 "
+    matched.to_csv(DATA / "seoul_dispositions_matched.csv", index=False, encoding="utf-8-sig")
+    print(f"서울 처분 {len(seoul):,}건 중 영업 중 식당과 매칭 {len(matched):,}건 "
           f"(식당 {matched['mgt_no'].nunique()}곳)")
     print("※ 동명 업소 오매칭 가능성이 있으니 addr 컬럼으로 육안 검수 권장")
 

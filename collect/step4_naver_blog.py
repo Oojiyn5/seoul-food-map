@@ -15,7 +15,7 @@ Google 리뷰 5개 제한을 대체하는 데이터. 이후 단계에서
 
 출력:
   data/cache/naver_blog.json  mgt_no별 원본 (재실행 시 이어서 수집)
-  data/yeonhui_blogs.csv      글 단위 정리본
+  data/area_blogs.csv         글 단위 정리본
 """
 import argparse
 import html
@@ -24,7 +24,7 @@ import time
 
 import pandas as pd
 
-from common import DATA, TARGET_DONG, JsonCache, get_json, secret
+from common import DATA, JsonlCache, get_json, secret
 
 URL = "https://naverapihub.apigw.ntruss.com/search/v1/blog"
 DISPLAY = 100  # 1회 최대
@@ -69,11 +69,11 @@ def mentions(keys, text):
     return any(k in t for k in keys)
 
 
-def fetch_shop(headers, name, per_shop):
+def fetch_shop(headers, name, place, per_shop):
     items = []
     keys = name_keys(name)
     for start in range(1, min(per_shop, 1000) + 1, DISPLAY):
-        params = {"query": f"{TARGET_DONG} {base_name(name)}", "display": DISPLAY, "start": start, "sort": "sim"}
+        params = {"query": f"{place} {base_name(name)}", "display": DISPLAY, "start": start, "sort": "sim"}
         body = get_json(URL, params=params, headers=headers)
         page = body.get("items", [])
         items.extend(page)
@@ -97,23 +97,33 @@ def main():
         "X-NCP-APIGW-API-KEY-ID": secret("naver_client_id"),
         "X-NCP-APIGW-API-KEY": secret("naver_client_secret"),
     }
-    shops = pd.read_csv(DATA / "yeonhui_restaurants.csv", dtype={"mgt_no": str})
+    shops = pd.read_csv(DATA / "area_restaurants.csv", dtype={"mgt_no": str})
     shops = shops[shops["closed"] == 0]
     if args.limit:
         shops = shops.head(args.limit)
 
-    cache = JsonCache("naver_blog")
+    cache = JsonlCache("naver_blog")
     todo = shops[~shops["mgt_no"].isin(cache.data)]
     print(f"대상 {len(shops)}곳, 신규 요청 {len(todo)}곳")
+    fails = 0
     for i, (_, shop) in enumerate(todo.iterrows(), 1):
         try:
-            cache[shop["mgt_no"]] = fetch_shop(headers, shop["name"], args.per_shop)
+            cache[shop["mgt_no"]] = fetch_shop(headers, shop["name"], shop["area_name"], args.per_shop)
+            fails = 0
+        except RuntimeError as e:
+            print(f"  ! {shop['name']}: {e}")
+            print("  중단합니다(받은 결과는 저장됨). 내일 다시 실행하면 이어서 받아요.")
+            break
         except Exception as e:
             print(f"  ! {shop['name']}: {e}")
+            fails += 1
+            if fails >= 5:
+                print("  연속 5번 실패해서 중단합니다(받은 결과는 저장됨).")
+                break
             continue
         if i % 10 == 0:
             cache.save()
-            print(f"  {i}/{len(todo)}")
+            print(f"  {i}/{len(todo)} ({time.strftime('%H:%M')})", flush=True)
     cache.save()
 
     rows = []
@@ -124,6 +134,7 @@ def main():
             rows.append({
                 "mgt_no": shop["mgt_no"],
                 "name": shop["name"],
+                "area_name": shop["area_name"],
                 "title": title,
                 "description": desc,
                 "link": it.get("link"),
@@ -135,7 +146,7 @@ def main():
                 "ad_suspect": bool(AD_PATTERN.search(title + " " + desc)),
             })
     out = pd.DataFrame(rows).drop_duplicates(["mgt_no", "link"])
-    out.to_csv(DATA / "yeonhui_blogs.csv", index=False, encoding="utf-8-sig")
+    out.to_csv(DATA / "area_blogs.csv", index=False, encoding="utf-8-sig")
 
     rel = out[out["mentions_name"]]
     per_shop = rel.groupby("mgt_no").size()

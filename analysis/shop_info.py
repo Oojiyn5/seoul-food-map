@@ -4,9 +4,9 @@
 블로그 요약문에서 언급을 찾아 "근거 글 수 · 최근 언급일 · 링크"와 함께 보여준다.
 예약 방식은 바뀔 수 있으므로 최근 언급일을 꼭 같이 표시한다.
 
-입력:  data/yeonhui_blog_posts.csv (blog_nlp.py 결과, 상호 언급 글), data/yeonhui_details.csv,
-       data/yeonhui_restaurants.csv
-출력:  data/yeonhui_info.csv, analysis/output/shop_info_summary.txt
+입력:  data/area_blog_posts.csv (blog_nlp.py 결과, 상호 언급 글), data/area_details.csv,
+       data/area_restaurants.csv
+출력:  data/area_info.csv, analysis/output/shop_info_summary.txt
 실행:  py shop_info.py
 """
 import re
@@ -70,9 +70,10 @@ def label_date(d):
 
 
 def main():
-    allp = pd.read_csv(DATA / "yeonhui_blog_posts.csv", dtype={"mgt_no": str})
+    allp = pd.read_csv(DATA / "area_blog_posts.csv", dtype={"mgt_no": str}, low_memory=False)
     allp["text"] = allp["title"].fillna("") + " " + allp["description"].fillna("")
     # 사실 정보(예약·주차)는 광고글에도 맞게 쓰여 있으므로 광고 여부와 관계없이 쓴다. 식당 이야기가 아닌 글만 뺀다
+    allp["off_topic"] = allp["off_topic"].astype(str).eq("True")
     p = allp[~allp["off_topic"]]
     log(f"상호 언급 글 {len(p):,}건, {p['mgt_no'].nunique()}곳")
 
@@ -131,7 +132,7 @@ def main():
         if c not in info:
             info[c] = None   # 폐업 소식이 하나도 없어도 열은 있어야 export가 동작한다
 
-    # 웨이팅 정도: 연희동 안 상대 비교 (글 10건 이상인 가게만 판단)
+    # 웨이팅 정도: 분석 지역 안 상대 비교 (글 10건 이상인 가게만 판단)
     enough = info["n_posts"] >= 10
     q = info.loc[enough, "wait_share"].quantile([0.5, 0.85])
     info["waiting"] = "정보 부족"
@@ -139,9 +140,9 @@ def main():
                                          labels=["드묾", "가끔", "잦음"]).astype(str)
 
     # 구글 Place Details 합치기
-    shops = pd.read_csv(DATA / "yeonhui_restaurants.csv", dtype={"mgt_no": str})
-    shops = shops[shops["closed"] == 0].set_index("mgt_no")[["name"]]
-    det = pd.read_csv(DATA / "yeonhui_details.csv", dtype={"mgt_no": str}).set_index("mgt_no")
+    shops = pd.read_csv(DATA / "area_restaurants.csv", dtype={"mgt_no": str})
+    shops = shops[shops["closed"] == 0].set_index("mgt_no")[["name", "area_name"]]
+    det = pd.read_csv(DATA / "area_details.csv", dtype={"mgt_no": str}).set_index("mgt_no")
     out = shops.join(info).join(det.drop(columns=["name", "place_id"]))
     out["n_posts"] = out["n_posts"].fillna(0).astype(int)
     out[["park_yes", "park_no", "park_public"]] = out[["park_yes", "park_no", "park_public"]].fillna(0)
@@ -166,9 +167,9 @@ def main():
     g_rsv = out["reservable"].map({True: "예약 가능(구글)", False: "예약 안 받음(구글)"}).fillna("")
     out["reserve_info"] = [" · ".join(x for x in (a if isinstance(a, str) else "", b) if x)
                            for a, b in zip(out["reserve_methods"], g_rsv)]
-    out["naver_map_url"] = ["https://map.naver.com/p/search/" + quote(f"연희동 {n}") for n in out["name"]]
+    out["naver_map_url"] = ["https://map.naver.com/p/search/" + quote(f"{a} {n}") for n, a in zip(out["name"], out["area_name"])]
 
-    log("\n[정보가 있는 가게 비율, 영업 중 391곳 기준]")
+    log(f"\n[정보가 있는 가게 비율, 영업 중 {len(out)}곳 기준]")
     log(f"  예약 방법 {(out['reserve_info'] != '').mean():.0%}, 웨이팅 판단 {(out['waiting'].isin(['드묾', '가끔', '잦음'])).mean():.0%}, "
         f"주차 {(out['parking_info'] != '').mean():.0%}, 전화 {out['phone'].notna().mean():.0%}, 영업시간 {out['hours'].notna().mean():.0%}")
     for label, _ in RESERVE:
@@ -183,8 +184,8 @@ def main():
     for _, r in cl.iterrows():
         log(f"  {r['name']}: {int(r['closure_posts'])}건, 최근 {r['closure_date']} | {r['closure_title'][:60]}")
 
-    out.reset_index().to_csv(DATA / "yeonhui_info.csv", index=False, encoding="utf-8-sig")
-    log(f"\n→ data/yeonhui_info.csv ({len(out)}곳)")
+    out.reset_index().to_csv(DATA / "area_info.csv", index=False, encoding="utf-8-sig")
+    log(f"\n→ data/area_info.csv ({len(out)}곳)")
     (OUT / "shop_info_summary.txt").write_text("\n".join(lines), encoding="utf-8")
 
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>연희동 식당 AI 지도</title>
+<title>서울 식당 AI 지도</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -13,6 +13,8 @@
   --line: #e7e5e4; --line-2: #f0eeeb;
   --accent: #e8590c; --accent-ink: #c2410c; --accent-soft: #fff4ec;
   --tier1: #e8590c; --tier2: #f59f00; --tier3: #a8a29e;
+  /* 생존력(서울 전체): 파란색 한 가지, 진할수록 생존력이 높음 */
+  --s1: #86b6ef; --s2: #3987e5; --s3: #1c5cab; --s4: #0d366b; --s-na: #c8c4bf;
   --good: #2f9e44; --good-soft: #ebfbee; --warn: #e67700; --warn-soft: #fff9db; --bad: #e03131; --bad-soft: #fff5f5;
   --chip: #f5f5f4; --shadow: 0 1px 2px rgba(28,25,23,.06), 0 4px 16px rgba(28,25,23,.06);
   --shadow-lg: 0 8px 32px rgba(28,25,23,.14);
@@ -24,10 +26,21 @@
     --line: #2e2b29; --line-2: #262422;
     --accent: #ff8a3d; --accent-ink: #ffa264; --accent-soft: #34211a;
     --tier1: #ff8a3d; --tier2: #fcc419; --tier3: #78716c;
+    --s1: #184f95; --s2: #2a78d6; --s3: #6da7ec; --s4: #b7d3f6; --s-na: #57534e;
     --good: #51cf66; --good-soft: #17301c; --warn: #fcc419; --warn-soft: #332b10; --bad: #ff6b6b; --bad-soft: #3a1c1c;
     --chip: #2a2725; --shadow: 0 1px 2px rgba(0,0,0,.4); --shadow-lg: 0 8px 32px rgba(0,0,0,.5);
     --tile-filter: invert(1) hue-rotate(180deg) saturate(.35) brightness(.85) contrast(.9);
   }
+}
+:root[data-theme="dark"] {
+  --bg: #121110; --panel: #1c1a19; --panel-2: #232120; --ink: #f5f5f4; --ink-2: #d6d3d1; --muted: #a8a29e;
+  --line: #2e2b29; --line-2: #262422;
+  --accent: #ff8a3d; --accent-ink: #ffa264; --accent-soft: #34211a;
+  --tier1: #ff8a3d; --tier2: #fcc419; --tier3: #78716c;
+  --s1: #184f95; --s2: #2a78d6; --s3: #6da7ec; --s4: #b7d3f6; --s-na: #57534e;
+  --good: #51cf66; --good-soft: #17301c; --warn: #fcc419; --warn-soft: #332b10; --bad: #ff6b6b; --bad-soft: #3a1c1c;
+  --chip: #2a2725; --shadow: 0 1px 2px rgba(0,0,0,.4); --shadow-lg: 0 8px 32px rgba(0,0,0,.5);
+  --tile-filter: invert(1) hue-rotate(180deg) saturate(.35) brightness(.85) contrast(.9);
 }
 * { box-sizing: border-box; }
 html, body { margin: 0; height: 100%; overflow: hidden; }
@@ -50,8 +63,13 @@ aside { display: flex; flex-direction: column; background: var(--panel); border-
 .brand h1 { font-size: 18px; font-weight: 750; margin: 0; letter-spacing: -0.03em; }
 .brand p { margin: 0; color: var(--muted); font-size: 12.5px; }
 
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin: 12px 20px 0; padding: 4px; background: var(--chip); border-radius: 12px; }
+.modes button { border: 0; background: transparent; border-radius: 9px; padding: 7px 8px; font-weight: 650; font-size: 13px; color: var(--muted); line-height: 1.3; }
+.modes button small { display: block; font-weight: 500; font-size: 11px; }
+.modes button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: var(--shadow); }
+
 .searchbox {
-  margin: 14px 20px 0; display: flex; align-items: center; gap: 6px; padding: 5px 5px 5px 14px;
+  margin: 12px 20px 0; display: flex; align-items: center; gap: 6px; padding: 5px 5px 5px 14px;
   border: 1.5px solid var(--line); border-radius: 14px; background: var(--panel-2); transition: border-color .15s, box-shadow .15s;
 }
 .searchbox:focus-within { border-color: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
@@ -73,10 +91,22 @@ aside { display: flex; flex-direction: column; background: var(--panel); border-
 }
 .controls select { appearance: none; padding-right: 28px; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: right 14px top 14px, right 9px top 14px; background-size: 5px 5px; background-repeat: no-repeat; }
 .fchip[aria-pressed="true"] { background: var(--ink); border-color: var(--ink); color: var(--panel); }
+[hidden] { display: none !important; }
 
-.listhead { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 20px 6px; }
+/* 오늘의 추천: 날짜로 정해지는 3곳 (같은 날엔 누구에게나 같음) */
+.today { padding: 12px 20px 2px; }
+.today-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 7px; }
+.today-head b { font-size: 13px; }
+.today-head span { font-size: 11.5px; color: var(--muted); }
+.picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.pick { text-align: left; border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--line)); background: var(--accent-soft); border-radius: 12px; padding: 8px 9px; min-width: 0; display: flex; flex-direction: column; justify-content: flex-start; }
+.pick:hover { border-color: var(--accent); }
+.pick .pn { font-weight: 700; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pick .pm { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pick .pk { font-size: 11.5px; color: var(--accent-ink); font-weight: 600; margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.listhead { display: flex; justify-content: space-between; align-items: baseline; padding: 12px 20px 6px; gap: 10px; }
 .listhead b { font-size: 13px; }
-.listhead span { font-size: 12px; color: var(--muted); }
+.listhead span { font-size: 12px; color: var(--muted); text-align: right; }
 .list { overflow-y: auto; flex: 1; min-height: 0; padding: 0 12px 12px; }
 .card {
   display: block; width: 100%; text-align: left; background: transparent; border: 1px solid transparent; border-radius: 14px;
@@ -85,7 +115,7 @@ aside { display: flex; flex-direction: column; background: var(--panel); border-
 .card:hover { background: var(--panel-2); }
 .card.active { background: var(--accent-soft); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
 .card .top { display: flex; align-items: flex-start; gap: 10px; }
-.rank { flex: none; width: 22px; font-size: 12px; font-weight: 700; color: var(--muted); padding-top: 2px; font-variant-numeric: tabular-nums; }
+.rank { flex: none; width: 26px; font-size: 12px; font-weight: 700; color: var(--muted); padding-top: 2px; font-variant-numeric: tabular-nums; }
 .card .body { flex: 1; min-width: 0; }
 .card .name { font-weight: 700; font-size: 15px; letter-spacing: -0.02em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card .meta { color: var(--muted); font-size: 12.5px; margin-top: 1px; }
@@ -96,18 +126,28 @@ aside { display: flex; flex-direction: column; background: var(--panel); border-
 .score small { display: block; font-size: 10px; font-weight: 600; opacity: .75; }
 .score.t1 { background: var(--tier1); color: #fff; }
 .score.t2 { background: color-mix(in srgb, var(--tier2) 22%, var(--panel)); color: var(--ink); }
-.minis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 9px 0 0 32px; }
+.score.sv { background: color-mix(in srgb, var(--s3) 14%, var(--panel)); color: var(--ink); }
+.minis { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 9px 0 0 36px; }
 .mini { font-size: 11px; color: var(--muted); }
 .mini .track { height: 4px; border-radius: 2px; background: var(--line); margin-top: 3px; overflow: hidden; }
 .mini .track i { display: block; height: 100%; border-radius: 2px; background: var(--ink-2); }
 .mini.na .track i { width: 0 !important; }
-.tags { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0 0 32px; }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0 0 36px; }
 .tag { font-size: 11.5px; padding: 2px 8px; border-radius: 6px; background: var(--chip); color: var(--ink-2); }
 .tag.kw { background: transparent; border: 1px solid var(--line); }
+.tag.area { background: transparent; color: var(--accent-ink); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
 .tag.good { background: var(--good-soft); color: var(--good); }
 .tag.warn { background: var(--warn-soft); color: var(--warn); }
 .tag.bad { background: var(--bad-soft); color: var(--bad); }
-.empty { text-align: center; color: var(--muted); padding: 40px 20px; }
+.empty { text-align: center; color: var(--muted); padding: 32px 20px; }
+.more { display: block; width: calc(100% - 16px); margin: 6px 8px; height: 38px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel); font-weight: 650; font-size: 13px; }
+.gu-row { display: flex; width: 100%; align-items: center; gap: 10px; border: 0; background: transparent; border-radius: 12px; padding: 9px 12px; text-align: left; }
+.gu-row:hover { background: var(--panel-2); }
+.gu-row b { flex: 1; font-size: 14px; }
+.gu-row span { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.gu-row .bar { width: 70px; height: 6px; border-radius: 3px; background: var(--line); overflow: hidden; flex: none; }
+.gu-row .bar i { display: block; height: 100%; background: var(--s3); border-radius: 3px; }
+.hint { margin: 4px 8px 10px; padding: 10px 12px; border-radius: 12px; background: var(--panel-2); font-size: 12.5px; color: var(--ink-2); }
 footer { padding: 10px 20px; border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); }
 
 /* ---------- 지도 ---------- */
@@ -118,20 +158,18 @@ footer { padding: 10px 20px; border-top: 1px solid var(--line); font-size: 11px;
 .leaflet-container { font: inherit; }
 .leaflet-control-zoom a { background: var(--panel) !important; color: var(--ink) !important; border-color: var(--line) !important; }
 .leaflet-control-attribution { background: color-mix(in srgb, var(--panel) 80%, transparent) !important; color: var(--muted) !important; }
-.pin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.35); transition: transform .15s; }
-.pin.t1 { background: var(--tier1); width: 18px; height: 18px; }
-.pin.t2 { background: var(--tier2); }
-.pin.t3 { background: var(--tier3); width: 11px; height: 11px; }
-.pin.closed { opacity: .35; filter: grayscale(1); }
-.pin.sel { transform: scale(1.6); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent), 0 2px 8px rgba(0,0,0,.4); }
 .leaflet-tooltip.nametip { background: var(--ink); color: var(--panel); border: 0; border-radius: 8px; padding: 4px 9px; font-weight: 650; box-shadow: var(--shadow); }
 .leaflet-tooltip.nametip::before { display: none; }
+.leaflet-tooltip.arealabel { background: var(--panel); color: var(--accent-ink); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); border-radius: 999px; padding: 2px 9px; font-weight: 700; font-size: 12px; box-shadow: var(--shadow); }
+.leaflet-tooltip.arealabel::before { display: none; }
 .legend {
   position: absolute; top: 14px; right: 14px; z-index: 500; background: var(--panel); border-radius: 12px; box-shadow: var(--shadow);
-  padding: 9px 12px; font-size: 12px; display: flex; gap: 12px; align-items: center;
+  padding: 9px 12px; font-size: 12px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; max-width: calc(100% - 28px);
 }
 .legend span { display: inline-flex; align-items: center; gap: 5px; color: var(--ink-2); }
 .legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.legend .lt { font-weight: 650; color: var(--ink); }
+.zoomhint { position: absolute; left: 50%; bottom: 18px; transform: translateX(-50%); z-index: 500; background: var(--ink); color: var(--panel); border-radius: 999px; padding: 6px 14px; font-size: 12.5px; font-weight: 600; box-shadow: var(--shadow); white-space: nowrap; }
 
 /* ---------- 상세 패널 ---------- */
 .detail {
@@ -146,7 +184,9 @@ footer { padding: 10px 20px; border-top: 1px solid var(--line); font-size: 11px;
 .d-name { font-size: 22px; font-weight: 800; letter-spacing: -0.03em; margin: 2px 40px 2px 0; line-height: 1.3; }
 .d-addr { font-size: 12.5px; color: var(--muted); }
 .d-alert { margin-top: 10px; font-size: 12.5px; padding: 8px 10px; border-radius: 10px; background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+.d-info { margin-top: 10px; font-size: 12.5px; padding: 8px 10px; border-radius: 10px; background: var(--panel-2); color: var(--ink-2); border: 1px solid var(--line-2); }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 16px 0 6px; }
+.stats.one { grid-template-columns: 1fr; }
 .stat { background: var(--panel-2); border: 1px solid var(--line-2); border-radius: 14px; padding: 10px 11px; }
 .stat .k { font-size: 11.5px; color: var(--muted); font-weight: 600; }
 .stat .v { font-size: 20px; font-weight: 800; letter-spacing: -0.03em; margin-top: 1px; font-variant-numeric: tabular-nums; }
@@ -188,7 +228,7 @@ dialog.about::backdrop { background: rgba(20, 18, 16, .45); backdrop-filter: blu
 .about p, .about li { font-size: 13.5px; color: var(--ink-2); }
 .about ul { padding-left: 18px; margin: 6px 0; }
 .about li { margin: 3px 0; }
-.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 10px 0 4px; }
+.metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 10px 0 4px; }
 .metric { background: var(--panel-2); border: 1px solid var(--line-2); border-radius: 12px; padding: 10px 12px; }
 .metric b { display: block; font-size: 20px; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
 .metric span { font-size: 11.5px; color: var(--muted); }
@@ -201,9 +241,11 @@ dialog.about::backdrop { background: rgba(20, 18, 16, .45); backdrop-filter: blu
   .mapwrap { order: 1; }
   aside { order: 2; border-right: 0; border-radius: 18px 18px 0 0; margin-top: -14px; box-shadow: 0 -4px 16px rgba(0,0,0,.08); }
   .brand { padding: 14px 16px 0; } .brand p { display: none; }
+  .modes { margin: 10px 16px 0; }
   .searchbox { margin: 10px 16px 0; } .examples { margin: 2px 16px 0; } .ai-status { margin: 4px 18px 0; }
   .controls { padding: 10px 16px; } .listhead { padding: 10px 16px 4px; } .list { padding: 0 8px 8px; }
   .legend { top: 10px; right: 10px; padding: 6px 10px; gap: 8px; font-size: 11px; }
+  .zoomhint { bottom: 22px; font-size: 12px; }
   .detail { position: fixed; top: auto; left: 0; right: 0; bottom: 0; width: auto; max-height: 82dvh; border-radius: 20px 20px 0 0; transform: translateY(105%); }
   .detail.open { transform: none; }
   footer { display: none; }
@@ -218,12 +260,17 @@ dialog.about::backdrop { background: rgba(20, 18, 16, .45); backdrop-filter: blu
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><path d="M9.5 8v3.5M12 8v3.5M14.5 8v3.5M12 11.5V14"/></svg>
       </div>
       <div style="flex:1;min-width:0">
-        <h1>연희동 식당 AI 지도</h1>
+        <h1>서울 식당 AI 지도</h1>
         <p>맛 · 생존력 · 호불호로 고르고, 먹고 싶은 걸 말로 찾기</p>
       </div>
       <button class="about-btn" id="aboutBtn" aria-label="분석 방법 보기" title="분석 방법">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9.5"/><path d="M12 11v6M12 7.5v.01"/></svg>
       </button>
+    </div>
+
+    <div class="modes" role="group" aria-label="보기">
+      <button id="modeArea" aria-pressed="true">AI 분석 지역<small id="modeAreaSub">연희·연남·신촌·홍대·합정·상수</small></button>
+      <button id="modeSeoul" aria-pressed="false">서울 전체<small id="modeSeoulSub">생존력 · 위생</small></button>
     </div>
 
     <form class="searchbox" id="searchForm" role="search">
@@ -234,22 +281,28 @@ dialog.about::backdrop { background: rgba(20, 18, 16, .45); backdrop-filter: blu
     </form>
     <div class="ai-status" id="aiStatus"></div>
     <div class="examples" id="examples">
-      <button>비 오는 날 짬뽕</button><button>데이트 와인바</button><button>회식 고기집</button><button>반려견 동반 브런치</button><button>주차 되는 카페</button>
+      <button>비 오는 날 짬뽕</button><button>데이트 와인바</button><button>회식 고기집</button><button>반려견 동반 브런치</button><button>혼밥 라멘</button><button>주차 되는 한식</button>
     </div>
 
     <div class="controls">
       <select id="sort" aria-label="정렬">
         <option value="rec">추천순</option>
         <option value="taste">맛 좋은 순</option>
-        <option value="surv">오래 버틸 순</option>
+        <option value="surv">생존력 높은 순</option>
         <option value="mild">호불호 적은 순</option>
       </select>
+      <select id="area" aria-label="지역"><option value="">모든 지역</option></select>
       <select id="cat" aria-label="업태"><option value="">모든 업태</option></select>
-      <button class="fchip" data-f="openNow" aria-pressed="false">지금 영업 중</button>
-      <button class="fchip" data-f="lowWait" aria-pressed="false">웨이팅 적음</button>
-      <button class="fchip" data-f="parking" aria-pressed="false">주차</button>
-      <button class="fchip" data-f="reserve" aria-pressed="false">예약</button>
+      <button class="fchip" data-f="inView" aria-pressed="false">지도 화면 안</button>
+      <button class="fchip area-only" data-f="openNow" aria-pressed="false">지금 영업 중</button>
+      <button class="fchip area-only" data-f="lowWait" aria-pressed="false">웨이팅 적음</button>
+      <button class="fchip area-only" data-f="parking" aria-pressed="false">주차</button>
+      <button class="fchip area-only" data-f="reserve" aria-pressed="false">예약</button>
     </div>
+    <section class="today" id="today" hidden aria-label="오늘의 추천">
+      <div class="today-head"><b>오늘의 추천</b><span id="todaySub"></span></div>
+      <div class="picks" id="picks"></div>
+    </section>
     <div class="listhead"><b id="count"></b><span id="countSub"></span></div>
     <div class="list" id="list"></div>
     <footer id="foot"></footer>
@@ -257,11 +310,8 @@ dialog.about::backdrop { background: rgba(20, 18, 16, .45); backdrop-filter: blu
 
   <div class="mapwrap">
     <div id="map"></div>
-    <div class="legend" id="legend">
-      <span><i style="background:var(--tier1)"></i>추천 상위 20%</span>
-      <span><i style="background:var(--tier2)"></i>다음 30%</span>
-      <span><i style="background:var(--tier3)"></i>그 외</span>
-    </div>
+    <div class="legend" id="legend"></div>
+    <div class="zoomhint" id="zoomHint" hidden>확대하면 가게 하나하나가 보여요</div>
     <section class="detail" id="detail" aria-live="polite">
       <button class="close" id="closeDetail" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
       <div class="scroll" id="detailBody"></div>
@@ -273,30 +323,39 @@ dialog.about::backdrop { background: rgba(20, 18, 16, .45); backdrop-filter: blu
   <div class="inner">
     <button class="close" id="closeAbout" aria-label="닫기"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     <h2 id="aboutTitle">이 지도는 어떻게 만들었나요</h2>
-    <p class="lead">공공데이터·구글·네이버 블로그를 모아 AI 모델 네 가지로 연희동 식당을 평가했어요. 숫자는 모두 직접 검증한 값이에요.</p>
+    <p class="lead">서울 영업 중인 식당 전체는 공공데이터로 <b>생존력·위생</b>을, 연희·연남·신촌·홍대·합정·상수는 구글·네이버 블로그까지 모아 <b>맛·호불호·방문 정보·AI 검색</b>까지 분석했어요. 숫자는 모두 직접 검증한 값이에요.</p>
 
     <div class="metrics">
       <div class="metric"><b>0.632</b><span>생존 예측 AUC<br>(단순 규칙 0.592)</span></div>
       <div class="metric"><b>0.96</b><span>감성분석 AUC<br>(구글 리뷰 교차검증)</span></div>
-      <div class="metric"><b id="mCount">386</b><span>연희동 영업 중 식당<br>(서울 48만 곳으로 학습)</span></div>
+      <div class="metric"><b id="mSeoul">-</b><span>서울 영업 중 식당<br>(생존력·위생)</span></div>
+      <div class="metric"><b id="mCount">-</b><span>AI 분석 지역 식당<br>(모든 기능)</span></div>
     </div>
 
-    <h3>추천 점수</h3>
+    <h3>추천 점수 (AI 분석 지역)</h3>
     <div class="formula">추천 = 맛 50% + 생존력 30% + 호불호 적음 20% <span style="color:var(--muted)">(정보가 없으면 중간값)</span></div>
+    <p><b>오늘의 추천</b>은 추천 점수 상위 20% 가게 중 폐업 소식·행정처분·임시 휴업이 없는 곳에서 날짜에 따라 3곳을 골라요(같은 날엔 누구에게나 같아요). 지금 영업 중인 가게를 먼저, 업태는 되도록 겹치지 않게 보여주고, 아래 작은 글씨는 주 메뉴나 블로그 키워드예요.</p>
 
-    <h3>① 생존력 — 이산시간 생존모델 (LightGBM) + SHAP</h3>
+    <h3>① 생존력 — 이산시간 생존모델 (LightGBM) + SHAP · 서울 전체</h3>
     <ul>
       <li>1990년 이후 개업한 서울 일반음식점 48만 곳을 "개업 후 k년차" 구간 346만 개로 펼쳐, 그해 안에 폐업하는지 학습했어요.</li>
-      <li>업태·면적·영업 연수·상호 특징과 그 당시 주변 식당 수·작년 주변 폐업 수(약 300m 격자)를 썼어요.</li>
+      <li>업태·면적·영업 연수·자치구·상호 특징과 그 당시 주변 식당 수·작년 주변 폐업 수(약 300m 격자)를 썼어요.</li>
       <li>2021년까지로 학습하고 2022~2024년으로 검증: AUC 0.632 (단순 규칙 0.592, Cox 비례위험 0.611).</li>
-      <li>점수는 서울 영업 중 식당과 비교한 3년 폐업 위험 순위예요. 가게별 요인은 SHAP으로 설명했어요.</li>
+      <li>점수는 서울 영업 중 식당과 비교한 3년 폐업 위험 순위예요(100점 = 생존력이 가장 높은 가게). 가게별 요인은 SHAP으로 설명했어요.</li>
+    </ul>
+
+    <h3>⑤ 맛 — 베이지안 평점 + 블로그 추정</h3>
+    <div class="formula">평점 = (20 × 지역 평균 <span id="mPrior">-</span> + 리뷰 수 × 구글 평점) ÷ (20 + 리뷰 수)</div>
+    <ul>
+      <li>리뷰가 적은 가게의 평점이 운에 흔들리지 않도록 지역 평균 쪽으로 당겼어요.</li>
+      <li>구글은 무료 사용량 안에서만 받아서(블로그 글이 많은 가게부터) 일부 가게만 평점이 있어요. 나머지는 <b>블로그 글로 구글 평점을 예측하는 모델</b>(e5 임베딩 + 감성 + 글 수, Ridge 회귀)로 추정하고 "추정"이라고 표시해요. 교차검증 순위상관 <b id="mTaste">-</b>.</li>
     </ul>
 
     <h3>③ 호불호 — 블로그 감성분석</h3>
     <ul>
-      <li>네이버 블로그 약 3만 6천 건에서 협찬 문구·체험단 원고·식당과 무관한 글을 걸렀어요.</li>
+      <li>네이버 블로그 글에서 협찬 문구·체험단 원고·식당과 무관한 글을 걸렀어요.</li>
       <li>구글 리뷰 별점(★4~5 긍정, ★1~2 부정)을 정답으로 다국어 e5 임베딩 + 로지스틱 회귀를 학습 (교차검증 AUC 0.96).</li>
-      <li><b>참고용인 이유:</b> 블로그엔 부정 글이 1.4%뿐이고, 블로그 감성과 구글 평점의 상관이 약해요(ρ≈0.15).</li>
+      <li><b>참고용인 이유:</b> 블로그엔 부정 글이 매우 적고, 블로그 감성과 구글 평점의 상관이 약해요.</li>
     </ul>
 
     <h3>④ AI 검색 · 키워드</h3>
@@ -305,14 +364,10 @@ dialog.about::backdrop { background: rgba(20, 18, 16, .45); backdrop-filter: blu
       <li>키워드는 형태소 분석(Kiwi) → 가게별 TF-IDF → KeyBERT 방식(MMR)으로 겹치지 않게 골랐어요.</li>
     </ul>
 
-    <h3>⑤ 맛 — 베이지안 평점</h3>
-    <div class="formula">평점 = (20 × 연희동 평균 4.22 + 리뷰 수 × 구글 평점) ÷ (20 + 리뷰 수)</div>
-    <p>리뷰가 적은 가게의 평점이 운에 흔들리지 않도록 연희동 평균 쪽으로 당겼어요.</p>
-
     <h3>방문 정보 · 위생</h3>
     <ul>
-      <li>예약 방법(캐치테이블·테이블링·네이버 예약·전화·예약 불가)·웨이팅·주차는 블로그 언급을 규칙으로 뽑고 근거 글 링크를 달았어요. 구글 Places 정보도 합쳤어요.</li>
-      <li>위생은 점수에 넣지 않고, 식품안전나라에 공표된 최근 2년 행정처분만 사실대로 표시해요.</li>
+      <li>예약 방법(캐치테이블·테이블링·네이버 예약·전화·예약 불가)·웨이팅·주차는 블로그 언급을 규칙으로 뽑고 근거 글 링크를 달았어요.</li>
+      <li>위생은 점수에 넣지 않고, 식품안전나라에 공표된 최근 2년 행정처분만 사실대로 표시해요(서울 전체).</li>
       <li>"폐업 소식"은 구글 '영업 종료' 표시나 상호+폐업이 제목에 있는 글이 있을 때 붙여요.</li>
     </ul>
 
@@ -322,7 +377,7 @@ dialog.about::backdrop { background: rgba(20, 18, 16, .45); backdrop-filter: blu
     <h3>한계</h3>
     <ul>
       <li>인허가 정보만으로는 폐업을 어느 정도만 예측할 수 있어요(AUC 0.63). 확률보다 순위로 보세요.</li>
-      <li>흔한 상호는 다른 가게 글이 섞일 수 있고, 예약·웨이팅 정보는 지금과 다를 수 있어요.</li>
+      <li>블로그로 추정한 맛 점수는 구글 평점보다 덜 정확해요. 흔한 상호는 다른 가게 글이 섞일 수 있고, 예약·웨이팅 정보는 지금과 다를 수 있어요.</li>
     </ul>
     <p class="note" id="aboutMeta"></p>
   </div>
@@ -334,12 +389,19 @@ dialog.about::backdrop { background: rgba(20, 18, 16, .45); backdrop-filter: blu
 <script type="module">
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const state = { data: [], filters: { openNow: false, lowWait: false, parking: false, reserve: false }, ai: false, aiScores: null, selected: null };
+const AREAS = ["연희동", "연남동", "신촌", "홍대", "합정", "상수"];
+const SHOP_ZOOM = 15;            // 서울 전체 보기에서 이 확대 이상이면 가게 하나하나를 그린다
+const PAGE = 150;                // 목록은 150곳씩 더 보기
+const state = {
+  mode: "area", data: [], filters: { inView: false, openNow: false, lowWait: false, parking: false, reserve: false },
+  ai: false, aiScores: null, selected: null, shown: PAGE,
+  seoul: { index: null, files: new Map(), loading: new Set(), rows: [] },
+};
+const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 
 // ---------- 지도 ----------
-// 배경: OpenFreeMap Positron(연회색 단순 지도, 키 불필요). OSM 기본 타일은 너무 빽빽해 마커가 묻혀서 바꿨다.
-// 지명은 한국어(name:ko)로 바꿔 표시. WebGL이 안 되는 브라우저는 OSM 타일로 대신한다
-const map = L.map("map", { zoomControl: false, maxZoom: 19 }).setView([37.5685, 126.9305], 16);
+// 배경: OpenFreeMap Positron(연회색 단순 지도, 키 불필요). WebGL이 안 되는 브라우저는 OSM 타일로 대신한다
+const map = L.map("map", { zoomControl: false, maxZoom: 19, preferCanvas: true }).setView([37.5565, 126.9255], 15);
 L.control.zoom({ position: "bottomright" }).addTo(map);
 const OSM_ATTR = '&copy; <a href="https://openfreemap.org" target="_blank">OpenFreeMap</a> &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>';
 const dark = matchMedia("(prefers-color-scheme: dark)").matches && document.documentElement.dataset.theme !== "light";
@@ -359,20 +421,34 @@ try {
   console.warn("벡터 지도를 못 써서 OSM 타일로 대신해요", e);
   L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", { maxZoom: 19, attribution: OSM_ATTR }).addTo(map);
 }
-const layer = L.layerGroup().addTo(map);
-const markers = new Map();
+// 마커가 수천 개라 DOM 대신 캔버스에 그린다
+const canvas = L.canvas({ padding: 0.3 });
+const gridLayer = L.layerGroup().addTo(map);
+const outlineLayer = L.layerGroup().addTo(map);
+const dotLayer = L.layerGroup().addTo(map);
+const selLayer = L.layerGroup().addTo(map);
 
 // ---------- 점수 ----------
 function pctRank(values) {
   const v = values.filter((x) => x != null).sort((a, b) => a - b);
-  return (x) => (x == null || !v.length ? null : v.filter((y) => y <= x).length / v.length);
+  return (x) => {
+    if (x == null || !v.length) return null;
+    let lo = 0, hi = v.length;                 // x 이하 개수 (이진 탐색: 5천 곳이라 filter로 세면 느림)
+    while (lo < hi) { const mid = (lo + hi) >> 1; if (v[mid] <= x) lo = mid + 1; else hi = mid; }
+    return lo / v.length;
+  };
 }
 function prepare(rows) {
-  const tasteRank = pctRank(rows.map((r) => r.google?.bayes ?? null));
   for (const r of rows) {
-    r.taste = tasteRank(r.google?.bayes ?? null);                      // 0~1, 연희동 안 순위
+    r.area = r.area || "연희동";                                         // 예전 데이터 호환
+    r.taste_ = r.taste?.rating ?? r.google?.bayes ?? null;
+    r.tasteEst = r.taste?.source === "blog_model";
+  }
+  const tasteRank = pctRank(rows.map((r) => r.taste_));
+  for (const r of rows) {
+    r.taste = tasteRank(r.taste_);                                      // 0~1, 분석 지역 안 순위
     r.surv = r.survival.score != null ? r.survival.score / 100 : (r.survival.age >= 30 ? 0.95 : null);
-    r.mild = r.blog && !r.blog.low_evidence ? 1 - r.blog.controversy_pct : null;
+    r.mild = r.blog && !r.blog.low_evidence && r.blog.controversy_pct != null ? 1 - r.blog.controversy_pct : null;
     const part = (x) => (x == null ? 0.5 : x);                         // 정보가 없으면 중간값
     r.rec = 0.5 * part(r.taste) + 0.3 * part(r.surv) + 0.2 * part(r.mild);
     const info = r.info || {};
@@ -381,23 +457,27 @@ function prepare(rows) {
       parking: /가능|공영/.test(info.parking || ""),
       reserve: /캐치테이블|테이블링|네이버 예약|전화 예약|예약 가능|예약 필수/.test(info.reserve || "") && !/^예약 불가/.test(info.reserve || ""),
     };
-    r.kwText = [r.name, r.category, r.main_food, ...(r.blog?.keywords || [])].filter(Boolean).join(" ").toLowerCase();
+    r.kwText = [r.name, r.category, r.main_food, r.area, ...(r.blog?.keywords || [])].filter(Boolean).join(" ").toLowerCase();
     r.text = [r.kwText, info.reserve, info.parking, info.busy_when].filter(Boolean).join(" ").toLowerCase();
-    if (r.emb) {
-      const b = atob(r.emb), v = new Float32Array(b.length);
-      let n = 0;
-      for (let i = 0; i < b.length; i++) { const x = (b.charCodeAt(i) << 24) >> 24; v[i] = x; n += x * x; }
-      n = Math.sqrt(n) || 1;
-      for (let i = 0; i < v.length; i++) v[i] /= n;
-      r.vec = v;
-    }
+    if (r.emb) { r.vec = decodeVec(r.emb); delete r.emb; }
   }
   // 추천 등급: 상위 20% / 다음 30% / 나머지
   const recs = rows.map((r) => r.rec).sort((a, b) => b - a);
   const c1 = recs[Math.floor(recs.length * 0.2)], c2 = recs[Math.floor(recs.length * 0.5)];
   for (const r of rows) r.tier = r.rec > c1 ? 1 : r.rec > c2 ? 2 : 3;
 }
+function decodeVec(b64) {
+  const b = atob(b64), v = new Float32Array(b.length);
+  let n = 0;
+  for (let i = 0; i < b.length; i++) { const x = (b.charCodeAt(i) << 24) >> 24; v[i] = x; n += x * x; }
+  n = Math.sqrt(n) || 1;
+  for (let i = 0; i < v.length; i++) v[i] /= n;
+  return v;
+}
 const ageText = (a) => (a < 1 ? "1년 미만" : `${a}년째`);
+// 생존점수 → 색 (파란색 4단계, 진할수록 생존력이 높음). 점수 없음(1990년 이전 개업 등)은 회색
+const survBin = (s) => (s == null ? 0 : s >= 75 ? 4 : s >= 50 ? 3 : s >= 25 ? 2 : 1);
+const survColor = (s) => css(["--s-na", "--s1", "--s2", "--s3", "--s4"][survBin(s)]);
 // 지금 영업 중인지: hours_min = 요일별(일=0) [시작분, 끝분], 자정 넘기면 끝분 > 1440. 모르면 null
 function isOpenNow(r, now = new Date()) {
   const hm = r.info?.hours_min;
@@ -412,7 +492,7 @@ function isOpenNow(r, now = new Date()) {
 const closedLast = (a, b) => (a.closure ? 1 : 0) - (b.closure ? 1 : 0);
 
 // ---------- 검색 ----------
-let extractor = null;
+let extractor = null, embLoaded = null;
 async function loadModel() {
   if (extractor) return extractor;
   $("#aiStatus").textContent = "AI 모델 불러오는 중… (처음 한 번 약 120MB)";
@@ -425,8 +505,16 @@ async function loadModel() {
   $("#aiStatus").textContent = "AI 검색 켜짐 · 블로그 글의 의미로 찾아요";
   return extractor;
 }
+// 가게 임베딩은 AI 검색을 켤 때만 받는다 (약 3MB)
+function loadEmbeddings() {
+  if (state.data.some((r) => r.vec)) return Promise.resolve();
+  embLoaded ??= fetch("restaurants_emb.json").then((res) => res.json()).then((embs) => {
+    for (const r of state.data) if (embs[r.id]) r.vec = decodeVec(embs[r.id]);
+  });
+  return embLoaded;
+}
 // 질문 단어: 조사·'집' 떼고 2글자 이상 ("국수집을" → "국수")
-const STOPQ = new Set(["좋은", "있는", "없는", "곳", "맛집", "연희동", "가게", "식당", "하기", "먹기"]);
+const STOPQ = new Set(["좋은", "있는", "없는", "곳", "맛집", "가게", "식당", "하기", "먹기", "근처"]);
 const queryWords = (q) => q.toLowerCase().split(/\s+/).map((w) => w.replace(/(집|을|를|이|가|은|는|에서|하기|좋은)$/, ""))
   .filter((w) => w.length >= 2 && !STOPQ.has(w));
 // 질문에 조건어가 있으면 가게 정보와 맞는지 본다
@@ -437,13 +525,16 @@ const ATTR = [
   [/웨이팅\s*없|안\s*기다/, (r) => r.flags.lowWait],
   [/예약/, (r) => r.flags.reserve],
 ];
+// 질문에 지역 이름이 있으면 그 지역만 ("홍대 라멘" → 홍대)
+const AREA_ALIAS = { "연희": "연희동", "연남": "연남동", "신촌": "신촌", "홍대": "홍대", "홍익": "홍대", "합정": "합정", "상수": "상수" };
+const queryArea = (q) => Object.entries(AREA_ALIAS).find(([k]) => q.includes(k))?.[1] ?? null;
 // 하이브리드: e5 의미 유사도 + 키워드 일치(+0.012/단어) + 조건 일치(+0.008/조건).
 // 의미 유사도만 쓰면 블로그 글이 두루뭉술한 가게가 모든 질문에 올라와서 섞었다 (analysis 시험 결과)
 async function aiSearch(q) {
-  const ex = await loadModel();
+  const [ex] = await Promise.all([loadModel(), loadEmbeddings()]);
   const out = await ex("query: " + q, { pooling: "mean", normalize: true });
   const qv = out.data;
-  const ws = queryWords(q);
+  const ws = queryWords(q).filter((w) => !AREA_ALIAS[w] && !AREAS.includes(w));
   const attrs = ATTR.filter(([p]) => p.test(q));
   const scores = new Map();
   for (const r of state.data) {
@@ -458,7 +549,8 @@ async function aiSearch(q) {
 async function runSearch() {
   const q = $("#q").value.trim();
   state.aiScores = null;
-  if (q && state.ai) {
+  state.shown = PAGE;
+  if (q && state.ai && state.mode === "area") {
     try { state.aiScores = await aiSearch(q); }
     catch (err) { $("#aiStatus").textContent = "AI 모델을 불러오지 못해 키워드로 찾았어요"; console.error(err); }
   }
@@ -468,7 +560,7 @@ $("#searchForm").addEventListener("submit", (e) => { e.preventDefault(); runSear
 $("#aiToggle").addEventListener("click", () => {
   state.ai = !state.ai;
   $("#aiToggle").setAttribute("aria-pressed", state.ai);
-  if (state.ai) loadModel().catch(() => { $("#aiStatus").textContent = "AI 모델을 불러오지 못했어요 (키워드 검색은 돼요)"; });
+  if (state.ai) Promise.all([loadModel(), loadEmbeddings()]).catch(() => { $("#aiStatus").textContent = "AI 모델을 불러오지 못했어요 (키워드 검색은 돼요)"; });
   else $("#aiStatus").textContent = "";
   if ($("#q").value.trim()) runSearch();
 });
@@ -479,15 +571,54 @@ $("#examples").addEventListener("click", (e) => {
   runSearch();
 });
 
+// ---------- 보기 전환 ----------
+function setMode(mode) {
+  state.mode = mode;
+  state.aiScores = null;
+  state.shown = PAGE;
+  $("#modeArea").setAttribute("aria-pressed", mode === "area");
+  $("#modeSeoul").setAttribute("aria-pressed", mode === "seoul");
+  document.querySelectorAll(".area-only, #examples, #aiToggle, #area").forEach((el) => (el.hidden = mode === "seoul"));
+  $("#aiStatus").hidden = mode === "seoul";
+  $("#q").placeholder = mode === "area" ? "웨이팅 없는 조용한 국수집" : "가게 이름이나 업태 (예: 칼국수)";
+  $("#sort").innerHTML = mode === "area"
+    ? '<option value="rec">추천순</option><option value="taste">맛 좋은 순</option><option value="surv">생존력 높은 순</option><option value="mild">호불호 적은 순</option>'
+    : '<option value="surv">생존력 높은 순</option><option value="risk">폐업 위험 높은 순</option><option value="age">오래된 순</option>';
+  fillCats();
+  closeDetail();
+  if (mode === "seoul" && map.getZoom() > 14) map.setZoom(Math.min(map.getZoom(), 16));
+  if (mode === "area") fitArea();
+  render();
+}
+$("#modeArea").addEventListener("click", () => state.mode !== "area" && setMode("area"));
+$("#modeSeoul").addEventListener("click", () => state.mode !== "seoul" && setMode("seoul"));
+function fillCats() {
+  const cats = state.mode === "area"
+    ? [...new Set(state.data.map((r) => r.category).filter(Boolean))].sort()
+    : state.seoul.index?.cats || [];
+  const keep = $("#cat").value;
+  $("#cat").innerHTML = '<option value="">모든 업태</option>' + cats.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
+  if (cats.includes(keep)) $("#cat").value = keep;
+}
+
 // ---------- 필터 · 목록 ----------
 document.querySelectorAll(".fchip").forEach((b) => b.addEventListener("click", () => {
   const f = b.dataset.f;
   state.filters[f] = !state.filters[f];
   b.setAttribute("aria-pressed", state.filters[f]);
+  state.shown = PAGE;
   render();
 }));
-$("#cat").addEventListener("change", render);
-$("#sort").addEventListener("change", render);
+for (const id of ["#cat", "#sort", "#area"]) $(id).addEventListener("change", () => { state.shown = PAGE; render(); });
+let moveTimer = null;
+map.on("moveend", () => {
+  clearTimeout(moveTimer);
+  moveTimer = setTimeout(() => {
+    if (state.mode === "seoul") { state.shown = PAGE; render(); }
+    else if (state.filters.inView) { state.shown = PAGE; render(); }
+    else drawOutlines();
+  }, 120);
+});
 
 const mini = (label, x) => `<div class="mini${x == null ? " na" : ""}">${label}<div class="track"><i style="width:${Math.round((x ?? 0) * 100)}%"></i></div></div>`;
 function badges(r) {
@@ -502,82 +633,285 @@ function badges(r) {
   if (r.flags.reserve) out.push('<span class="tag">예약</span>');
   return out;
 }
+const tasteMeta = (r) => (r.taste_ == null ? "" : r.tasteEst ? ` · 추정 ${r.taste_.toFixed(1)}` : ` · ★ ${r.taste_.toFixed(1)}`);
 
 function render() {
+  if (state.mode === "area") renderArea(); else { $("#today").hidden = true; renderSeoul(); }
+  drawOutlines();
+  updateLegend();
+}
+
+function renderArea() {
   const q = $("#q").value.trim().toLowerCase();
   const cat = $("#cat").value;
+  const area = $("#area").value;
+  const qArea = q ? queryArea(q) : null;
   const key = $("#sort").value;
   const now = new Date();
-  for (const r of state.data) { r.open = isOpenNow(r, now); r.flags.openNow = r.open === true; }
-  let rows = state.data.filter((r) => (!cat || r.category === cat) && Object.entries(state.filters).every(([k, on]) => !on || r.flags[k]));
+  const bounds = map.getBounds();
+  for (const r of state.data) {
+    r.open = isOpenNow(r, now);
+    r.flags.openNow = r.open === true;
+    r.flags.inView = bounds.contains([r.lat, r.lng]);
+  }
+  let rows = state.data.filter((r) => (!cat || r.category === cat) && (!area || r.area === area) && (!qArea || r.area === qArea)
+    && Object.entries(state.filters).every(([k, on]) => !on || r.flags[k]));
   if (state.aiScores) {
     rows = rows.filter((r) => state.aiScores.has(r.id)).sort((a, b) => closedLast(a, b) || state.aiScores.get(b.id) - state.aiScores.get(a.id)).slice(0, 30);
   } else if (q) {
     // 키워드 검색: 질문 단어가 많이 맞는 가게부터, 같으면 정렬 기준대로. 조건어(주차·반려견 등)도 반영
-    const ws = queryWords(q), attrs = ATTR.filter(([p]) => p.test(q));
+    const ws = queryWords(q).filter((w) => !AREA_ALIAS[w] && !AREAS.includes(w)), attrs = ATTR.filter(([p]) => p.test(q));
     for (const r of rows) r.hit = ws.filter((w) => r.text.includes(w)).length + attrs.filter(([, f]) => f(r)).length;
-    rows = rows.filter((r) => r.hit > 0).sort((a, b) => closedLast(a, b) || b.hit - a.hit || (b[key] ?? -1) - (a[key] ?? -1));
+    if (ws.length || attrs.length) rows = rows.filter((r) => r.hit > 0);
+    rows.sort((a, b) => closedLast(a, b) || b.hit - a.hit || (b[key] ?? -1) - (a[key] ?? -1));
   } else {
     rows.sort((a, b) => closedLast(a, b) || (b[key] ?? -1) - (a[key] ?? -1));
   }
-  $("#count").textContent = state.aiScores ? `AI 검색 결과 ${rows.length}곳` : q ? `"${$("#q").value.trim()}" ${rows.length}곳` : `${rows.length}곳`;
+  $("#count").textContent = state.aiScores ? `AI 검색 결과 ${rows.length}곳` : q ? `"${$("#q").value.trim()}" ${rows.length.toLocaleString()}곳` : `${rows.length.toLocaleString()}곳`;
   $("#countSub").textContent = state.aiScores ? "의미가 가까운 순" : $("#sort").selectedOptions[0].textContent;
 
-  $("#list").innerHTML = rows.length ? rows.map((r, k) => `
+  const page = rows.slice(0, state.shown);
+  $("#list").innerHTML = rows.length ? page.map((r, k) => `
     <button class="card${state.selected === r.id ? " active" : ""}" data-id="${esc(r.id)}">
       <div class="top">
         <span class="rank">${k + 1}</span>
         <div class="body">
           <div class="name">${esc(r.name)}</div>
-          <div class="meta">${esc(r.category || "")} · ${ageText(r.survival.age)}${r.google?.bayes ? ` · ★ ${r.google.bayes.toFixed(1)}` : ""}</div>
+          <div class="meta">${esc(r.area)} · ${esc(r.category || "")} · ${ageText(r.survival.age)}${tasteMeta(r)}</div>
         </div>
         <span class="score t${r.tier}"><small>추천</small>${Math.round(r.rec * 100)}</span>
       </div>
-      <div class="minis">${mini("맛", r.taste)}${mini("생존력", r.surv)}${mini("호불호 적음", r.mild)}</div>
+      <div class="minis">${mini(r.tasteEst ? "맛(추정)" : "맛", r.taste)}${mini("생존력", r.surv)}${mini("호불호 적음", r.mild)}</div>
       <div class="tags">${badges(r).join("")}${(r.blog?.keywords || []).slice(0, 3).map((x) => `<span class="tag kw">${esc(x)}</span>`).join("")}</div>
-    </button>`).join("")
+    </button>`).join("") + (rows.length > page.length ? `<button class="more" id="more">더 보기 (${(rows.length - page.length).toLocaleString()}곳 남음)</button>` : "")
     : `<div class="empty">조건에 맞는 식당이 없어요.<br>필터를 줄이거나 다른 말로 찾아보세요.</div>`;
 
-  layer.clearLayers();
-  markers.clear();
-  for (const r of [...rows].reverse()) {   // 추천 높은 마커가 위에 오도록 마지막에 그린다
-    const icon = L.divIcon({ className: "", html: `<div class="pin t${r.tier}${r.closure ? " closed" : ""}${state.selected === r.id ? " sel" : ""}"></div>`, iconSize: [18, 18], iconAnchor: [9, 9] });
-    const m = L.marker([r.lat, r.lng], { icon, riseOnHover: true, zIndexOffset: (4 - r.tier) * 100 })
-      .bindTooltip(esc(r.name), { className: "nametip", direction: "top", offset: [0, -8] })
-      .on("click", () => select(r.id, false));
-    m.addTo(layer);
-    markers.set(r.id, m);
-  }
+  // 지도: 목록 전체(더 보기 전 포함)를 점으로. 추천 높은 점이 위에 오도록 나중에 그린다
+  gridLayer.clearLayers();
+  dotLayer.clearLayers();
+  $("#zoomHint").hidden = true;
+  const color = { 1: css("--tier1"), 2: css("--tier2"), 3: css("--tier3") };
+  for (const r of [...rows].reverse()) addDot(r, color[r.tier], r.tier === 1 ? 7 : r.tier === 2 ? 5.5 : 4.5, r.closure ? 0.35 : 0.95);
+  markSelected();
+  renderToday(q, now);
 }
-$("#list").addEventListener("click", (e) => {
-  const c = e.target.closest(".card");
-  if (c) select(c.dataset.id, true);
+
+// ---------- 오늘의 추천 ----------
+// 추천 상위 20%·맛 정보 있음·폐업 소식/행정처분/임시 휴업 없음 중에서, 날짜+가게 id 해시로 섞어 3곳.
+// 날짜로만 섞으니 같은 날엔 누가 열어도 같고, 지금 영업 중인 가게를 앞으로 당긴다. 업태는 되도록 겹치지 않게
+const fnv = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) h = Math.imul(h ^ s.charCodeAt(i), 0x01000193); return h >>> 0; };
+const openOrder = (r) => (r.open === true ? 0 : r.open == null ? 1 : 2);
+function renderToday(q, now) {
+  const box = $("#today");
+  box.hidden = state.mode !== "area" || !!q;
+  if (box.hidden) return;
+  const area = $("#area").value, cat = $("#cat").value;
+  const day = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+  const pool = state.data.filter((r) => r.tier === 1 && r.taste_ != null && !r.closure && !r.hygiene.warning
+    && r.google?.status !== "CLOSED_TEMPORARILY" && !r.blog?.low_evidence && (!area || r.area === area) && (!cat || r.category === cat))
+    .sort((a, b) => openOrder(a) - openOrder(b) || fnv(day + a.id) - fnv(day + b.id));
+  const picks = [];
+  for (const r of pool) if (picks.length < 3 && (cat || !picks.some((p) => p.category === r.category))) picks.push(r);
+  for (const r of pool) if (picks.length < 3 && !picks.includes(r)) picks.push(r);
+  if (!picks.length) { box.hidden = true; return; }
+  $("#todaySub").textContent = `${now.getMonth() + 1}월 ${now.getDate()}일${area ? " · " + area : ""} · 매일 바뀌어요`;
+  $("#picks").innerHTML = picks.map((r) => {
+    const kws = [r.main_food, ...(r.blog?.keywords || [])].filter(Boolean).slice(0, 2);
+    return `<button class="pick" data-id="${esc(r.id)}" title="${esc(r.name)}">
+      <div class="pn">${esc(r.name)}</div>
+      <div class="pm">${esc(r.area)} · ${esc(r.category || "")}</div>
+      <div class="pm">${tasteMeta(r).slice(3)}${r.open === true ? ' · <b style="color:var(--good)">영업 중</b>' : ""}</div>
+      ${kws.length ? `<div class="pk">${kws.map(esc).join(" · ")}</div>` : ""}
+    </button>`;
+  }).join("");
+}
+$("#picks").addEventListener("click", (e) => {
+  const b = e.target.closest(".pick");
+  const r = b && state.data.find((x) => x.id === b.dataset.id);
+  if (r) select(r, true);
 });
 
-function select(id, pan) {
-  state.selected = id;
-  const r = state.data.find((x) => x.id === id);
-  document.querySelectorAll(".card.active").forEach((x) => x.classList.remove("active"));
-  const card = document.querySelector(`.card[data-id="${CSS.escape(id)}"]`);
-  if (card) { card.classList.add("active"); card.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
-  document.querySelectorAll(".pin.sel").forEach((x) => x.classList.remove("sel"));
-  const m = markers.get(id);
-  if (m) {
-    m.getElement()?.querySelector(".pin")?.classList.add("sel");
-    m.setZIndexOffset(1000);
-    if (pan) map.flyTo(m.getLatLng(), Math.max(map.getZoom(), 17), { duration: 0.5 });
+function addDot(r, fill, radius, opacity = 0.95) {
+  L.circleMarker([r.lat, r.lng], { renderer: canvas, radius, color: css("--panel"), weight: 1.5, fillColor: fill, fillOpacity: opacity, opacity })
+    .bindTooltip(esc(r.name), { className: "nametip", direction: "top", offset: [0, -6] })
+    .on("click", () => select(r, false))
+    .addTo(dotLayer);
+}
+
+// ---------- 서울 전체 ----------
+async function loadSeoulIndex() {
+  if (state.seoul.index) return state.seoul.index;
+  state.seoul.index = await (await fetch("seoul/index.json")).json();
+  return state.seoul.index;
+}
+// 화면에 걸친 구 파일만 받는다
+function ensureGuFiles(bounds) {
+  const idx = state.seoul.index;
+  const need = idx.gus.filter((g) => !state.seoul.files.has(g.file) && !state.seoul.loading.has(g.file)
+    && bounds.intersects(L.latLngBounds([g.bbox[0], g.bbox[1]], [g.bbox[2], g.bbox[3]])));
+  for (const g of need) {
+    state.seoul.loading.add(g.file);
+    fetch("seoul/" + g.file).then((res) => res.json()).then((rows) => {
+      state.seoul.files.set(g.file, rows.map((x, k) => ({
+        seoul: true, id: `${g.file}#${k}`, gu: g.name, name: x[0], category: idx.cats[x[1]], lat: x[2], lng: x[3],
+        score: x[4], age: x[5], down: x[6].map((i) => idx.factors[i]), up: x[7].map((i) => idx.factors[i]),
+        hyg: x[8] || null, addr: x[9],
+      })));
+      state.seoul.loading.delete(g.file);
+      if (state.mode === "seoul") render();
+    });
   }
-  $("#detailBody").innerHTML = detail(r);
+  return need.length;
+}
+// 분석 지역 가게도 서울 보기에서 같은 기준(생존력)으로 보여준다
+function areaAsSeoul(r) {
+  return { area: r, id: r.id, name: r.name, category: r.category, lat: r.lat, lng: r.lng, score: r.survival.score, age: r.survival.age };
+}
+function renderSeoul() {
+  const idx = state.seoul.index;
+  gridLayer.clearLayers();
+  dotLayer.clearLayers();
+  if (!idx) { $("#list").innerHTML = '<div class="empty">서울 데이터를 불러오는 중…</div>'; return; }
+  const zoom = map.getZoom(), bounds = map.getBounds();
+  const q = $("#q").value.trim().toLowerCase(), cat = $("#cat").value, key = $("#sort").value;
+
+  if (zoom < SHOP_ZOOM) {
+    // 격자 요약: 약 550m 칸마다 생존점수 중앙값 색, 가게가 많을수록 진하게
+    const [dl, dg] = idx.grid.cell;
+    for (const [lat, lng, n, med] of idx.grid.rows) {
+      const b = [[lat - dl / 2, lng - dg / 2], [lat + dl / 2, lng + dg / 2]];
+      if (!bounds.intersects(b)) continue;
+      L.rectangle(b, { renderer: canvas, stroke: false, fillColor: survColor(med), fillOpacity: Math.min(0.85, 0.25 + n / 120) })
+        .bindTooltip(`가게 ${n}곳 · 생존력 중앙값 ${med ?? "-"}점`, { className: "nametip", direction: "top" })
+        .on("click", () => map.flyTo([lat, lng], SHOP_ZOOM + 1, { duration: 0.6 }))
+        .addTo(gridLayer);
+    }
+    $("#zoomHint").hidden = false;
+    $("#count").textContent = `자치구 ${idx.gus.length}곳`;
+    $("#countSub").textContent = "생존력 중앙값 높은 순";
+    const gus = [...idx.gus].sort((a, b) => (b.median_score ?? 0) - (a.median_score ?? 0));
+    $("#list").innerHTML = `<div class="hint">서울 영업 중 식당 ${idx.total_active.toLocaleString()}곳의 3년 생존력이에요. 지도를 확대하거나 구를 누르면 가게가 보여요.</div>`
+      + gus.map((g) => `<button class="gu-row" data-gu="${esc(g.name)}"><b>${esc(g.name)}</b><span>${g.count.toLocaleString()}곳</span><div class="bar"><i style="width:${g.median_score ?? 0}%"></i></div><span>${g.median_score ?? "-"}점</span></button>`).join("");
+    return;
+  }
+  $("#zoomHint").hidden = true;
+  const loading = ensureGuFiles(bounds) + state.seoul.loading.size;
+  let rows = [];
+  for (const list of state.seoul.files.values()) for (const s of list) if (bounds.contains([s.lat, s.lng])) rows.push(s);
+  for (const r of state.data) if (bounds.contains([r.lat, r.lng])) rows.push(areaAsSeoul(r));
+  rows = rows.filter((s) => (!cat || s.category === cat) && (!q || s.name.toLowerCase().includes(q) || (s.category || "").toLowerCase().includes(q)));
+  const val = { surv: (s) => s.score ?? -1, risk: (s) => (s.score == null ? -1 : 100 - s.score), age: (s) => s.age };
+  rows.sort((a, b) => val[key](b) - val[key](a));
+  for (const s of [...rows].reverse()) addDot(s.area || s, survColor(s.score), s.area ? 5.5 : 4.5);
+  // 분석 지역 가게 점은 클릭하면 자세한 정보, 서울 가게 점은 생존력·위생만
+  $("#count").textContent = `화면 안 ${rows.length.toLocaleString()}곳`;
+  $("#countSub").textContent = loading ? "구 데이터 불러오는 중…" : $("#sort").selectedOptions[0].textContent;
+  const page = rows.slice(0, state.shown);
+  $("#list").innerHTML = rows.length ? page.map((s, k) => `
+    <button class="card${state.selected === s.id ? " active" : ""}" data-id="${esc(s.id)}">
+      <div class="top">
+        <span class="rank">${k + 1}</span>
+        <div class="body">
+          <div class="name">${esc(s.name)}</div>
+          <div class="meta">${esc(s.category || "")} · ${ageText(s.age)}${s.area ? ` · <span style="color:var(--accent-ink)">AI 분석</span>` : ""}</div>
+        </div>
+        <span class="score sv"><small>생존력</small>${s.score ?? "–"}</span>
+      </div>
+      ${(s.hyg || s.area?.hygiene?.warning) ? '<div class="tags"><span class="tag bad">행정처분 이력</span></div>' : ""}
+    </button>`).join("") + (rows.length > page.length ? `<button class="more" id="more">더 보기 (${(rows.length - page.length).toLocaleString()}곳 남음)</button>` : "")
+    : `<div class="empty">${loading ? "불러오는 중…" : "화면 안에 조건에 맞는 식당이 없어요."}</div>`;
+  state.seoul.rows = rows;
+  markSelected();
+}
+
+$("#list").addEventListener("click", (e) => {
+  if (e.target.id === "more") { state.shown += PAGE; render(); return; }
+  const gu = e.target.closest(".gu-row");
+  if (gu) {
+    const g = state.seoul.index.gus.find((x) => x.name === gu.dataset.gu);
+    map.flyToBounds([[g.bbox[0], g.bbox[1]], [g.bbox[2], g.bbox[3]]], { duration: 0.6 });
+    return;
+  }
+  const c = e.target.closest(".card");
+  if (!c) return;
+  const id = c.dataset.id;
+  const r = state.data.find((x) => x.id === id) || state.seoul.rows.find((x) => x.id === id);
+  if (r) select(r, true);
+});
+
+// ---------- 분석 지역 윤곽 ----------
+// 지역마다 가게 위치의 볼록 껍질을 점선으로 그리고 이름표를 단다 (좌표가 튀는 가게는 중앙에서 1.5km 넘으면 뺌)
+let hulls = null;
+function hull(points) {
+  const p = [...points].sort((a, b) => a[1] - b[1] || a[0] - b[0]);
+  const cross = (o, a, b) => (a[1] - o[1]) * (b[0] - o[0]) - (a[0] - o[0]) * (b[1] - o[1]);
+  const lower = [], upper = [];
+  for (const x of p) { while (lower.length >= 2 && cross(lower.at(-2), lower.at(-1), x) <= 0) lower.pop(); lower.push(x); }
+  for (const x of p.reverse()) { while (upper.length >= 2 && cross(upper.at(-2), upper.at(-1), x) <= 0) upper.pop(); upper.push(x); }
+  return lower.slice(0, -1).concat(upper.slice(0, -1));
+}
+function drawOutlines() {
+  if (!hulls) {
+    hulls = AREAS.map((a) => {
+      const pts = state.data.filter((r) => r.area === a).map((r) => [r.lat, r.lng]);
+      if (pts.length < 3) return null;
+      const med = (k) => pts.map((p) => p[k]).sort((x, y) => x - y)[pts.length >> 1];
+      const c = L.latLng(med(0), med(1));
+      const inner = pts.filter((p) => c.distanceTo(p) < 1500);
+      return { name: a, ring: hull(inner), center: c };
+    }).filter(Boolean);
+  }
+  outlineLayer.clearLayers();
+  // 분석 지역 보기에서 가까이 볼 땐 점이 이미 지역을 보여주므로 윤곽은 멀리서 볼 때만
+  if (state.mode === "area" && map.getZoom() >= 15) return;
+  for (const h of hulls) {
+    L.polygon(h.ring, { renderer: canvas, color: css("--accent"), weight: 1.5, dashArray: "4 4", fill: state.mode === "seoul", fillOpacity: 0.04, interactive: false }).addTo(outlineLayer);
+    // 서울 전체를 멀리서 볼 땐 6개 상권이 한곳에 몰려 라벨이 겹치므로 확대했을 때만
+    if (state.mode === "seoul" && map.getZoom() < 14) continue;
+    L.marker(h.center, { opacity: 0, interactive: false, icon: L.divIcon({ className: "", iconSize: [0, 0] }) })
+      .bindTooltip(h.name, { permanent: true, direction: "center", className: "arealabel" }).addTo(outlineLayer);
+  }
+}
+
+// ---------- 범례 ----------
+function updateLegend() {
+  if (state.mode === "area") {
+    $("#legend").innerHTML = `<span><i style="background:var(--tier1)"></i>추천 상위 20%</span><span><i style="background:var(--tier2)"></i>다음 30%</span><span><i style="background:var(--tier3)"></i>그 외</span>`;
+  } else {
+    const grid = map.getZoom() < SHOP_ZOOM;
+    $("#legend").innerHTML = `<span class="lt">${grid ? "생존력 중앙값" : "생존력"}</span>`
+      + [["--s4", "75~100"], ["--s3", "50~74"], ["--s2", "25~49"], ["--s1", "0~24"]].map(([v, t]) => `<span><i style="background:var(${v});${grid ? "border-radius:2px" : ""}"></i>${t}</span>`).join("")
+      + (grid ? "" : `<span><i style="background:var(--s-na)"></i>30년 이상 등</span>`);
+  }
+}
+
+// ---------- 선택 · 상세 ----------
+function markSelected() {
+  selLayer.clearLayers();
+  const r = state.selected && (state.data.find((x) => x.id === state.selected) || state.seoul.rows.find((x) => x.id === state.selected));
+  if (!r) return;
+  L.circleMarker([r.lat, r.lng], { renderer: canvas, radius: 11, color: css("--accent"), weight: 3, fill: false, interactive: false }).addTo(selLayer);
+}
+function select(r, pan) {
+  if (r.area && typeof r.area === "object") r = r.area;   // 서울 보기에서 고른 분석 지역 가게
+  state.selected = r.id;
+  document.querySelectorAll(".card.active").forEach((x) => x.classList.remove("active"));
+  const card = document.querySelector(`.card[data-id="${CSS.escape(r.id)}"]`);
+  if (card) { card.classList.add("active"); card.scrollIntoView({ block: "nearest", behavior: "smooth" }); }
+  markSelected();
+  if (pan) map.flyTo([r.lat, r.lng], Math.max(map.getZoom(), 17), { duration: 0.5 });
+  $("#detailBody").innerHTML = r.seoul ? seoulDetail(r) : detail(r);
   $("#detail").classList.add("open");
   $("#detail .scroll").scrollTop = 0;
 }
-$("#closeDetail").addEventListener("click", () => {
+function closeDetail() {
   $("#detail").classList.remove("open");
   state.selected = null;
-  document.querySelectorAll(".pin.sel, .card.active").forEach((x) => x.classList.remove("sel", "active"));
-});
+  selLayer.clearLayers();
+  document.querySelectorAll(".card.active").forEach((x) => x.classList.remove("active"));
+}
+$("#closeDetail").addEventListener("click", closeDetail);
 
-// ---------- 상세 ----------
 const PRICE = { PRICE_LEVEL_INEXPENSIVE: "₩ 저렴", PRICE_LEVEL_MODERATE: "₩₩ 보통", PRICE_LEVEL_EXPENSIVE: "₩₩₩ 비쌈", PRICE_LEVEL_VERY_EXPENSIVE: "₩₩₩₩ 매우 비쌈" };
 const track = (x) => (x == null ? "" : `<div class="track"><i style="width:${Math.round(x * 100)}%"></i></div>`);
 const row = (k, v, sub) => (v ? `<div class="r"><span class="k">${k}</span><span>${v}${sub ? `<span class="sub">${sub}</span>` : ""}</span></div>` : "");
@@ -591,30 +925,39 @@ function hoursTable(h) {
     return `<span${cls}>${esc(d.replace("요일", ""))}</span><span${cls}>${esc(rest.join(": "))}</span>`;
   }).join("")}</div>`;
 }
+const factorBox = (down, up) => (down?.length || up?.length ? `
+    <h3>생존력 요인 <span style="font-weight:500;color:var(--muted);font-size:12px">· AI 모델(SHAP) 설명</span></h3>
+    <div class="factors">
+      <div class="factor down"><b>생존력을 높이는 점</b>${esc((down || []).join(", ") || "–")}</div>
+      <div class="factor up"><b>생존력을 낮추는 점</b>${esc((up || []).join(", ") || "–")}</div>
+    </div>` : "");
+const survTile = (score, age) => (score != null
+  ? `<div class="v">${score}<small>점</small></div><div class="s">서울 식당 100곳 중 ${score}곳보다 3년 폐업 위험이 낮음</div>${track(score / 100)}`
+  : `<div class="v">${age}<small>년</small></div><div class="s">오래된 가게 (예측 대상 밖)</div>`);
+
 function detail(r) {
   const g = r.google, b = r.blog, s = r.survival, i = r.info || {};
-  const taste = g?.bayes
-    ? `<div class="v">${g.bayes.toFixed(1)}<small>/5</small></div><div class="s">구글 리뷰 ${g.count.toLocaleString()}개 · 원래 ${g.rating ?? "-"}</div>${track(r.taste)}`
-    : `<div class="v" style="color:var(--muted)">–</div><div class="s">구글 평점 없음</div>`;
-  const surv = s.score != null
-    ? `<div class="v">${s.score}<small>점</small></div><div class="s">서울 식당 100곳 중 ${s.score}곳보다 3년 폐업 위험이 낮음</div>${track(s.score / 100)}`
-    : `<div class="v">${s.age}<small>년</small></div><div class="s">오래된 가게 (예측 대상 밖)</div>`;
-  const level = b && !b.low_evidence ? (b.controversy_pct >= 0.75 ? "높음" : b.controversy_pct >= 0.4 ? "보통" : "낮음") : null;
+  const taste = r.taste_ == null
+    ? `<div class="v" style="color:var(--muted)">–</div><div class="s">평점 정보 없음</div>`
+    : r.tasteEst
+      ? `<div class="v">${r.taste_.toFixed(1)}<small>/5</small></div><div class="s">블로그로 추정한 구글 평점 · 참고용</div>${track(r.taste)}`
+      : `<div class="v">${g.bayes.toFixed(1)}<small>/5</small></div><div class="s">구글 리뷰 ${g.count.toLocaleString()}개 · 원래 ${g.rating ?? "-"}</div>${track(r.taste)}`;
+  const level = b && !b.low_evidence && b.controversy_pct != null ? (b.controversy_pct >= 0.75 ? "높음" : b.controversy_pct >= 0.4 ? "보통" : "낮음") : null;
   const contro = level
     ? `<div class="v" style="font-size:18px">${level}</div><div class="s">블로그 ${b.n}건 중 부정 ${(b.neg_share * 100).toFixed(1)}% · 참고용</div>${track(1 - b.controversy_pct)}`
     : `<div class="v" style="color:var(--muted)">–</div><div class="s">블로그 글이 적어 판단 어려움</div>`;
   const links = (i.reserve_links || "").split(" ").filter(Boolean).map((u, k) => `<a href="${esc(u)}" target="_blank" rel="noopener">근거 글 ${k + 1}</a>`).join(" · ");
   const extras = [i.groups && "단체", i.kids && "아이 동반", i.dogs && "반려견", i.outdoor && "야외석", i.takeout && "포장", i.vegetarian && "채식"].filter(Boolean);
   return `
-    <div class="d-cat">${esc(r.category || "")}${g?.price ? " · " + PRICE[g.price] : ""} · ${ageText(s.age)} 영업</div>
+    <div class="d-cat">${esc(r.area)} · ${esc(r.category || "")}${g?.price ? " · " + PRICE[g.price] : ""} · ${ageText(s.age)} 영업</div>
     <div class="d-name">${esc(r.name)}</div>
     <div class="d-addr">${esc(r.addr || "")}</div>
     ${r.closure ? `<div class="d-alert" style="background:var(--bad-soft);color:var(--bad)">폐업 소식이 있어요 · ${esc(r.closure.title)}${r.closure.date ? ` (${esc(r.closure.date)})` : ""}${r.closure.link ? ` <a href="${esc(r.closure.link)}" target="_blank" rel="noopener">근거 보기</a>` : ""}<br><span style="font-weight:500">인허가 데이터엔 아직 영업 중이라, 방문 전 꼭 확인하세요.</span></div>` : ""}
     ${g?.status === "CLOSED_TEMPORARILY" ? '<div class="d-alert">구글 지도에 임시 휴업으로 표시돼 있어요</div>' : ""}
     ${r.hygiene.warning ? '<div class="d-alert" style="background:var(--bad-soft);color:var(--bad)">최근 2년 안에 공개된 행정처분이 있어요</div>' : ""}
     <div class="stats">
-      <div class="stat"><div class="k">맛</div>${taste}</div>
-      <div class="stat"><div class="k">생존력</div>${surv}</div>
+      <div class="stat"><div class="k">맛${r.tasteEst ? " (추정)" : ""}</div>${taste}</div>
+      <div class="stat"><div class="k">생존력</div>${survTile(s.score, s.age)}</div>
       <div class="stat"><div class="k">호불호</div>${contro}</div>
     </div>
     ${b?.keywords?.length ? `<div class="d-kws">${b.keywords.map((k) => `<span>${esc(k)}</span>`).join("")}</div>` : ""}
@@ -627,15 +970,9 @@ function detail(r) {
       ${row("전화", i.phone ? `<a href="tel:${esc(i.phone)}">${esc(i.phone)}</a>` : "")}
       ${row("영업시간", (r.open === true ? '<b style="color:var(--good)">지금 영업 중</b>' : r.open === false ? '<b style="color:var(--muted)">지금은 영업 시간이 아니에요</b>' : "") + hoursTable(i.hours))}
       ${row("편의", extras.join(" · "))}
-      ${row("위생", r.hygiene.warning ? "공개된 행정처분 있음" : '<span style="color:var(--good)">처분 없음</span>', r.hygiene.text?.replace("최근 2년 공개된 행정처분 없음 ", "최근 2년 · ") || "")}
+      ${row("위생", r.hygiene.warning ? hygieneText(r.hygiene.items) : '<span style="color:var(--good)">처분 없음</span>', r.hygiene.text?.replace("최근 2년 공개된 행정처분 없음 ", "최근 2년 · ") || "")}
     </div>
-
-    ${s.score != null && (s.down?.length || s.up?.length) ? `
-    <h3>생존력 요인 <span style="font-weight:500;color:var(--muted);font-size:12px">· AI 모델(SHAP) 설명</span></h3>
-    <div class="factors">
-      <div class="factor down"><b>오래 버티게 하는 점</b>${esc((s.down || []).join(", ") || "–")}</div>
-      <div class="factor up"><b>위험을 높이는 점</b>${esc((s.up || []).join(", ") || "–")}</div>
-    </div>` : ""}
+    ${s.score != null ? factorBox(s.down, s.up) : ""}
 
     <div class="actions">
       <a class="btn naver" href="${esc(i.naver_map)}" target="_blank" rel="noopener">네이버 지도·리뷰</a>
@@ -645,6 +982,22 @@ function detail(r) {
     ${r.note ? `<div class="note">${esc(r.note)}</div>` : ""}
     <div class="note">예약·웨이팅·주차는 블로그 언급과 구글 정보를 모은 것이라 지금과 다를 수 있어요. 방문 전에 확인하세요.</div>`;
 }
+const hygieneText = (items) => (items || []).map(([d, t, v]) => `${esc(String(d).slice(0, 4))}.${esc(String(d).slice(4, 6))} ${esc(t)}<span class="sub">${esc(v)}</span>`).join("<br>") || "공개된 행정처분 있음";
+function seoulDetail(s) {
+  const naver = "https://map.naver.com/p/search/" + encodeURIComponent(`${s.gu} ${s.name}`);
+  return `
+    <div class="d-cat">${esc(s.gu)} · ${esc(s.category || "")} · ${ageText(s.age)} 영업</div>
+    <div class="d-name">${esc(s.name)}</div>
+    <div class="d-addr">${esc(s.addr || "")}</div>
+    ${s.hyg ? '<div class="d-alert" style="background:var(--bad-soft);color:var(--bad)">최근 2년 안에 공개된 행정처분이 있어요</div>' : ""}
+    <div class="stats one"><div class="stat"><div class="k">생존력</div>${survTile(s.score, s.age)}</div></div>
+    <div class="rows">
+      ${row("위생", s.hyg ? hygieneText(s.hyg) : '<span style="color:var(--good)">처분 없음</span>', s.hyg ? "" : `최근 2년 · 기준일 ${esc(state.seoul.index.disposition_date)}`)}
+    </div>
+    ${s.score != null ? factorBox(s.down, s.up) : ""}
+    <div class="d-info">이 지역은 공공데이터로 생존력·위생만 분석했어요. 맛·호불호·예약 정보와 AI 검색은 연희·연남·신촌·홍대·합정·상수에서 볼 수 있어요.</div>
+    <div class="actions"><a class="btn naver" href="${naver}" target="_blank" rel="noopener">네이버 지도·리뷰</a></div>`;
+}
 
 // ---------- 분석 방법 ----------
 $("#aboutBtn").addEventListener("click", () => $("#about").showModal());
@@ -652,17 +1005,38 @@ $("#closeAbout").addEventListener("click", () => $("#about").close());
 $("#about").addEventListener("click", (e) => { if (e.target === $("#about")) $("#about").close(); });   // 바깥 클릭으로 닫기
 
 // ---------- 시작 ----------
+function fitArea() {
+  const sel = $("#area").value;
+  const pts = state.data.filter((r) => !sel || r.area === sel).map((r) => [r.lat, r.lng]);
+  if (pts.length) map.fitBounds(L.latLngBounds(pts), { padding: [30, 30], maxZoom: 17 });
+}
+$("#area").addEventListener("change", fitArea);
 const json = await (await fetch("restaurants.json")).json();
 state.data = json.restaurants;
 prepare(state.data);
-const cats = [...new Set(state.data.map((r) => r.category).filter(Boolean))].sort();
-$("#cat").innerHTML += cats.map((c) => `<option value="${esc(c)}">${esc(c)}</option>`).join("");
-// 처음 화면은 연희동 가게들이 꽉 차게
-map.fitBounds(L.latLngBounds(state.data.map((r) => [r.lat, r.lng])), { padding: [30, 30], maxZoom: 17 });
-$("#mCount").textContent = json.meta.count;
+const present = AREAS.filter((a) => state.data.some((r) => r.area === a));
+$("#area").innerHTML += present.map((a) => `<option value="${a}">${a} (${state.data.filter((r) => r.area === a).length.toLocaleString()})</option>`).join("");
+fillCats();
+fitArea();
+$("#mCount").textContent = json.meta.count.toLocaleString();
+$("#mPrior").textContent = json.meta.prior_mean_rating;
+$("#mTaste").textContent = json.meta.taste_cv_rho != null ? json.meta.taste_cv_rho.toFixed(2) : "-";
+$("#modeAreaSub").textContent = `${present.map((a) => a.replace("동", "")).join("·")} ${json.meta.count.toLocaleString()}곳`;
 $("#aboutMeta").textContent = `데이터 기준 ${json.meta.generated} · 행정처분 조회 ${json.meta.disposition_date} · 코드와 분석 과정은 프로젝트 README에 있어요.`;
-$("#foot").textContent = `연희동 영업 중 ${json.meta.count}곳 · 데이터 기준 ${json.meta.generated} · 인허가 공공데이터포털 · 평점 Google · 후기 네이버 블로그 · 위생 식품안전나라`;
+$("#foot").textContent = `분석 지역 ${json.meta.count.toLocaleString()}곳 · 데이터 기준 ${json.meta.generated} · 인허가 공공데이터포털 · 평점 Google · 후기 네이버 블로그 · 위생 식품안전나라`;
 render();
+loadSeoulIndex().then((idx) => {
+  $("#modeSeoulSub").textContent = `${idx.total_active.toLocaleString()}곳 · 생존력·위생`;
+  $("#mSeoul").textContent = idx.total_active.toLocaleString();
+  if (state.mode === "seoul") { fillCats(); render(); }
+}).catch((e) => console.error("서울 데이터를 못 불러왔어요", e));
+// 주소 끝에 #seoul 을 붙이면 서울 전체 보기로 시작 (#seoul@37.5,127.03,16 처럼 위치도 지정 가능)
+const hash = location.hash.match(/^#seoul(?:@([\d.]+),([\d.]+),(\d+))?/);
+if (hash) {
+  setMode("seoul");
+  if (hash[1]) map.setView([+hash[1], +hash[2]], +hash[3]);
+  else map.setView([37.5550, 126.9900], 11);
+}
 </script>
 </body>
 </html>

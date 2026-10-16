@@ -8,10 +8,13 @@
 5. 키워드: Kiwi 명사 후보 → 가게별 TF-IDF 상위 → KeyBERT 방식 MMR로 겹치지 않게 5개
 6. 검색용 임베딩: 광고 아닌 글 임베딩의 평균 (브라우저에서 같은 e5 모델로 질문을 임베딩해 비교)
 
-입력:  data/yeonhui_blogs.csv, data/yeonhui_blogs_extra.csv, data/cache/google_places.json
-출력:  data/yeonhui_blog_nlp.csv, data/yeonhui_blog_posts.csv, data/yeonhui_shop_emb.npz,
+입력:  data/area_blogs.csv, data/area_blogs_extra.csv, data/cache/google_places.json
+출력:  data/area_blog_nlp.csv, data/area_blog_posts.csv, data/area_shop_emb.npz,
        analysis/output/blog_nlp_summary.txt
-실행:  py blog_nlp.py   (임베딩은 analysis/checkpoints/blog_emb.npz 에 저장, 재실행 시 이어서 계산)
+실행:  py blog_nlp.py   (임베딩은 analysis/checkpoints/blog_emb/ 에 조각으로 저장, 재실행 시 이어서 계산)
+
+가게가 5천 곳이라 임베딩(감성·키워드·검색·주제 필터)은 가게당 최근 글 MAX_EMB_POSTS건까지만 계산한다.
+나머지 글도 예약·웨이팅·주차 규칙(shop_info.py)에는 쓴다.
 """
 import json
 import re
@@ -28,25 +31,31 @@ from sklearn.model_selection import StratifiedKFold, cross_val_predict
 from prep import DATA, OUT, ROOT
 
 sys.path.insert(0, str(ROOT / "collect"))
-from step4_naver_blog import compact, mentions, name_keys  # noqa: E402
+from step4_naver_blog import base_name, compact, mentions, name_keys  # noqa: E402
 
 CKPT = ROOT / "analysis" / "checkpoints"
 CKPT.mkdir(exist_ok=True)
-EMB_PATH = CKPT / "blog_emb.npz"
+EMB_DIR = CKPT / "blog_emb"           # chunk_0000.npz ... (texts, emb float16)
+EMB_DIR.mkdir(exist_ok=True)
+LEGACY_EMB = CKPT / "blog_emb.npz"    # 연희동만 할 때 저장한 한 덩어리 파일
+MAX_EMB_POSTS = 100   # 5천 곳 × 100건이면 CPU로 약 3시간
 MODEL = "intfloat/multilingual-e5-small"   # 브라우저용 Xenova/multilingual-e5-small 과 같은 모델
 DUP_SIM = 0.6        # 글자 n-gram 유사도가 이 이상인 글이 다른 블로거에게 2건 이상 있으면 체험단 원고로 본다
 PRIOR_K = 10         # 호불호 지수 축소 강도 (글 10건 분량의 전체 평균)
 MIN_POSTS = 10       # 이보다 글이 적으면 '근거 부족'
 OFF_TOPIC_Q = 0.02   # 전체 평균과 유사도 하위 2% 글은 식당 이야기가 아닌 것으로 본다 (하위 1~3% 글을 읽어 보고 정함)
-AREA = r"연희|신촌|연대|연세|홍대|홍제|서대문|연남|명지대|사러가|궁동|홍연"   # 연희동 주변 지명
-STOP = set("""연희동 연희 연남동 신촌 홍대 서대문구 서울 맛집 방문 후기 리뷰 포스팅 블로그 오늘 정도 생각 사람 가게 식당
+# 분석 지역(연희·연남·신촌·홍대·합정·상수) 주변 지명
+AREA = (r"연희|신촌|연대|연세|홍대|홍익|홍제|서대문|연남|명지대|사러가|궁동|홍연|마포|서교|동교|합정|상수|망원|"
+        r"이대|이화|창천|노고산|경의선|연트럴|당인리|서강|광흥창|신수|극동방송|와우산|어울마당|걷고싶은")
+STOP = set("""검색 일상 연희동 연희 연남동 신촌 홍대 서대문구 서울 맛집 방문 후기 리뷰 포스팅 블로그 오늘 정도 생각 사람 가게 식당
 메뉴 음식 추천 위치 시간 영업시간 주소 전화 전화번호 주차 주차장 예약 웨이팅 근처 이번 다음 친구 정말 진짜 하나 가격
 사진 인스타그램 인스타 내돈내산 이곳 여기 저희 우리 동네 느낌 분위기 하루 주말 평일 점심 저녁 시작 마무리 정보 이용
 라스트오더 휴무 매주 브레이크타임 브레이크 타임 도보 거리 지하철 출구 번출구 연희로 홍연길 연희맛로 서울특별시
+홍대입구 홍익대 합정 합정역 상수 상수역 서교동 동교동 망원 망원동 이대 이화여대 신촌역 연남 마포구 경의선 숲길 연트럴파크 와우산로 어울마당로 양화로 독막로 잔다리로 동교로 월드컵북로 신촌로 명물길 연세로
 입구 마트 정류장 버스 요일 월요일 화요일 수요일 목요일 금요일 토요일 일요일 오픈 마감 공지 사장 사장님 이용시간 소개 진행 유명 장소 정기 나들이 고지 공간 감성 방문기 리뷰어 이야기 오더 라스트 오랜만 매장 안녕 가능 하우스 서대문 마포 연대 연세대 주식회사 법인""".split())
 # 지점명('연희점', '본점'), 도로명('성산로'), 지명('석남동', '서구', '인천광역시'). 같은 이름의 다른 지역 가게 글이 섞일 때 나온다
 # '면'은 냉면·라면 때문에 빼고, 동·시·구로 끝나는 음식(우동, 텐동, 스시, 아구)은 예외
-NOT_KEYWORD = re.compile(r"점$|로$|길$|(?<!우|규|텐|츠|케|타|센|코|비|후)동$|(?<!스|홍)시$|(?<!아)구$|군$|읍$|광역시|특별시")
+NOT_KEYWORD = re.compile(r"점$|로$|길$|(?<!미)역$|(?<!우|규|텐|츠|케|타|센|코|비|후)동$|(?<!스|홍)시$|(?<!아)구$|군$|읍$|광역시|특별시")
 
 lines = []
 
@@ -58,8 +67,8 @@ def log(s=""):
 
 # ---------------------------------------------------------------- 데이터
 def load_posts():
-    main = pd.read_csv(DATA / "yeonhui_blogs.csv", dtype={"mgt_no": str})
-    extra_path = DATA / "yeonhui_blogs_extra.csv"
+    main = pd.read_csv(DATA / "area_blogs.csv", dtype={"mgt_no": str})
+    extra_path = DATA / "area_blogs_extra.csv"
     parts = [main.assign(topic="일반")]
     if extra_path.exists():
         parts.append(pd.read_csv(extra_path, dtype={"mgt_no": str}))
@@ -72,11 +81,19 @@ def load_posts():
     ok = b["mentions_name"] & (~b["name_ambiguous"] | in_title)
     log(f"상호 언급 글 {b['mentions_name'].sum():,}건 → 짧은 상호는 제목 언급만 인정 → {ok.sum():,}건")
     b = b[ok].reset_index(drop=True)
-    # 연희동 주변 지명이 없는 글은 같은 이름의 다른 가게·체인 다른 지점 글일 가능성이 커서 뺀다 (전체의 약 3%)
-    local = (b["title"] + " " + b["description"]).str.contains(AREA, regex=True)
-    log(f"연희동 주변 지명이 있는 글만 → {local.sum():,}건 (체인 다른 지점·동명 가게 글 {(~local).sum():,}건 제외)")
+    # 분석 지역 주변 지명이 없는 글은 같은 이름의 다른 가게·체인 다른 지점 글일 가능성이 커서 뺀다 (연희동에선 약 3%)
+    # 상호 자체에 지명이 든 체인('신촌황소곱창')은 다른 지점 글도 통과하므로, 상호를 지운 뒤에 지명을 찾는다
+    full = b["title"] + " " + b["description"]
+    name_pat = {n: re.compile(r"\s*".join(map(re.escape, re.sub(r"\s", "", base_name(n)))), re.I) for n in b["name"].unique()}
+    local = pd.Series([bool(re.search(AREA, name_pat[n].sub(" ", t))) for n, t in zip(b["name"], full)], index=b.index)
+    log(f"분석 지역 주변 지명이 있는 글만 → {local.sum():,}건 (체인 다른 지점·동명 가게 글 {(~local).sum():,}건 제외)")
     b = b[local].reset_index(drop=True)
     b["text"] = (b["title"] + ". " + b["description"]).str.slice(0, 400)
+    # 임베딩 대상: 가게당 최근 글 MAX_EMB_POSTS건 (일반 검색 글 먼저)
+    order = b.assign(_gen=(b["topic"] == "일반").astype(int)).sort_values(["_gen", "postdate"], ascending=False)
+    b["emb_use"] = False
+    b.loc[order.groupby("mgt_no").head(MAX_EMB_POSTS).index, "emb_use"] = True
+    log(f"임베딩 대상 {b['emb_use'].sum():,}건 (가게당 최대 {MAX_EMB_POSTS}건)")
     return b
 
 
@@ -98,23 +115,29 @@ def google_reviews():
 
 def embed(texts):
     """e5 임베딩. 계산한 문장은 checkpoints에 저장해 두고 새 문장만 계산한다."""
+    import time
     texts = list(dict.fromkeys(texts))
     have = {}
-    if EMB_PATH.exists():
-        z = np.load(EMB_PATH, allow_pickle=True)
-        have = dict(zip(z["texts"].tolist(), z["emb"]))
+    for path in ([LEGACY_EMB] if LEGACY_EMB.exists() else []) + sorted(EMB_DIR.glob("chunk_*.npz")):
+        z = np.load(path, allow_pickle=True)
+        have.update(zip(z["texts"].tolist(), z["emb"].astype(np.float32)))
     todo = [t for t in texts if t not in have]
     log(f"임베딩: 저장됨 {len(texts) - len(todo):,}건, 새로 계산 {len(todo):,}건")
     if todo:
         from sentence_transformers import SentenceTransformer
         model = SentenceTransformer(MODEL)
-        step = 2000
+        step, t0 = 2000, time.time()
+        n_chunk = len(list(EMB_DIR.glob("chunk_*.npz")))
         for i in range(0, len(todo), step):
             chunk = todo[i:i + step]
             e = model.encode(["passage: " + t for t in chunk], batch_size=64, normalize_embeddings=True)
             have.update(zip(chunk, e.astype(np.float32)))
-            np.savez(EMB_PATH, texts=np.array(list(have), dtype=object), emb=np.stack(list(have.values())))
-            print(f"  {min(i + step, len(todo)):,}/{len(todo):,}", flush=True)
+            # 조각마다 새 파일로 저장 (전체를 매번 다시 쓰면 수십만 건에서 느려짐)
+            np.savez(EMB_DIR / f"chunk_{n_chunk:04d}.npz", texts=np.array(chunk, dtype=object), emb=e.astype(np.float16))
+            n_chunk += 1
+            done = min(i + step, len(todo))
+            left = (time.time() - t0) / done * (len(todo) - done) / 60
+            print(f"  {done:,}/{len(todo):,} (남은 시간 약 {left:.0f}분)", flush=True)
     return have
 
 
@@ -154,13 +177,14 @@ def keywords(b, emb_of, model_encode):
     df = pd.Series([w for s in shop_terms.values() for w in s.index]).value_counts()
     idf = np.log(len(shop_terms) / df)
     out = {}
+    texts_of = b.groupby("mgt_no")["text"].agg(list)
     for m, tf in shop_terms.items():
         if tf.empty:
             out[m] = ""
             continue
         cand = (tf * idf[tf.index]).sort_values(ascending=False).head(15).index.tolist()
         ce = model_encode(cand)
-        centroid = np.mean([emb_of[t] for t in b.loc[b["mgt_no"] == m, "text"]], axis=0)
+        centroid = np.mean([emb_of[t] for t in texts_of[m]], axis=0)
         rel = ce @ centroid
         chosen = [int(np.argmax(rel))]
         while len(chosen) < min(5, len(cand)):  # MMR: 가게와 관련 크고 이미 고른 단어와 덜 겹치게
@@ -177,11 +201,14 @@ def main():
     g = google_reviews()
     log(f"감성 라벨: 구글 리뷰(한국어, ★3 제외) {len(g):,}건, 부정(★1~2) {g['neg'].sum()}건")
 
-    emb_of = embed(b["text"].tolist() + g["text"].tolist())
+    allb = b
+    emb_of = embed(b.loc[b["emb_use"], "text"].tolist() + g["text"].tolist())
+    b = allb[allb["emb_use"]].reset_index(drop=True)
     Xb = np.stack([emb_of[t] for t in b["text"]])
     Xg = np.stack([emb_of[t] for t in g["text"]])
 
     # 광고 필터
+    log("\n체험단 원고 찾는 중...")
     b["ad_campaign"] = campaign_flags(b)
     b["is_ad"] = b["ad_suspect"] | b["ad_campaign"]
     log(f"\n[광고 필터] 협찬 문구 {b['ad_suspect'].sum():,}건, 체험단 원고 의심 {b['ad_campaign'].sum():,}건 "
@@ -218,14 +245,17 @@ def main():
                                     sent_mean=("p_neg", lambda p: 1 - p.mean()),
                                     sent_sd=("p_neg", "std"), last_post=("postdate", "max"))
     s["neg_share"] = (s["n_neg"] + PRIOR_K * m0) / (s["n_posts"] + PRIOR_K)
-    s["controversy_pct"] = s["neg_share"].rank(pct=True).round(3)   # 연희동 안 상대 순위 (높을수록 호불호)
     s["low_evidence"] = s["n_posts"] < MIN_POSTS
+    # 분석 지역 안 상대 순위 (높을수록 호불호). 글이 적은 가게는 순위 계산에서 뺀다
+    s["controversy_pct"] = s.loc[~s["low_evidence"], "neg_share"].rank(pct=True).round(3)
     s = s.join(b.groupby("mgt_no")["is_ad"].sum().rename("n_ads"))
+    s["ad_share"] = s["n_ads"].fillna(0) / b.groupby("mgt_no").size().reindex(s.index)
+    s = s.join(allb.groupby("mgt_no").size().rename("n_posts_all"))   # 임베딩 상한 전 관련 글 수 (인기 지표)
     log(f"\n[호불호] 광고 제외 글 {len(clean):,}건, 전체 부정 비율 {m0:.1%}, "
         f"글 {MIN_POSTS}건 미만 가게 {s['low_evidence'].sum()}곳")
 
     # 검증: 블로그 감성 평균과 구글 평점의 순위 상관 (리뷰 20개 이상, 글 10건 이상 가게)
-    gg = pd.read_csv(DATA / "yeonhui_google.csv", dtype={"mgt_no": str}).set_index("mgt_no")
+    gg = pd.read_csv(DATA / "area_google.csv", dtype={"mgt_no": str}).set_index("mgt_no")
     v = s.join(gg[["rating", "rating_count"]])
     v = v[(v["rating_count"] >= 20) & ~v["low_evidence"]]
     rho, p = spearmanr(v["sent_mean"], v["rating"])
@@ -238,17 +268,22 @@ def main():
     log("\n키워드 추출 중...")
     s["keywords"] = pd.Series(keywords(clean, emb_of, enc))
     ids = s.index.tolist()
-    shop_emb = np.stack([Xb[(b["mgt_no"] == m).values & use.values].mean(0) for m in ids])
+    rows_of = pd.Series(np.flatnonzero(use.values)).groupby(b.loc[use, "mgt_no"].values).agg(list)
+    shop_emb = np.stack([Xb[rows_of[m]].mean(0) for m in ids])
     shop_emb /= np.linalg.norm(shop_emb, axis=1, keepdims=True)
-    np.savez_compressed(DATA / "yeonhui_shop_emb.npz", mgt_no=np.array(ids), emb=shop_emb.astype(np.float16))
-    names = b.drop_duplicates("mgt_no").set_index("mgt_no")["name"]
+    np.savez_compressed(DATA / "area_shop_emb.npz", mgt_no=np.array(ids), emb=shop_emb.astype(np.float16))
+    names = allb.drop_duplicates("mgt_no").set_index("mgt_no")["name"]
     for m in s.sort_values("n_posts", ascending=False).index[:8]:
         log(f"  {names[m]}: {s.at[m, 'keywords']}")
 
     s.insert(0, "name", names[s.index])
-    s.round(3).to_csv(DATA / "yeonhui_blog_nlp.csv", encoding="utf-8-sig")
-    b.drop(columns=["text"]).to_csv(DATA / "yeonhui_blog_posts.csv", index=False, encoding="utf-8-sig")
-    log(f"\n→ data/yeonhui_blog_nlp.csv ({len(s)}곳), yeonhui_blog_posts.csv, yeonhui_shop_emb.npz")
+    s.round(3).to_csv(DATA / "area_blog_nlp.csv", encoding="utf-8-sig")
+    # 글 파일: 임베딩 안 한 글도 예약·웨이팅·주차 규칙에 쓰도록 같이 저장 (주제 필터·감성 값은 비어 있음)
+    flags = b.set_index(["mgt_no", "link"])[["ad_campaign", "is_ad", "topic_sim", "off_topic", "p_neg", "neg"]]
+    posts = allb.drop(columns=["text"]).join(flags, on=["mgt_no", "link"])
+    posts["off_topic"] = posts["off_topic"].astype("boolean").fillna(False)
+    posts.to_csv(DATA / "area_blog_posts.csv", index=False, encoding="utf-8-sig")
+    log(f"\n→ data/area_blog_nlp.csv ({len(s)}곳), area_blog_posts.csv ({len(posts):,}건), area_shop_emb.npz")
     (OUT / "blog_nlp_summary.txt").write_text("\n".join(lines), encoding="utf-8")
 
 

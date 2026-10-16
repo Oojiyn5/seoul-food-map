@@ -1,4 +1,4 @@
-"""1단계: 일반음식점 인허가 데이터 → 서울 전체(모델 학습용) + 연희동(지도용).
+"""1단계: 일반음식점 인허가 데이터 → 서울 전체(모델 학습·서울 지도용) + AI 분석 지역(연희·연남·신촌·홍대·합정·상수).
 
 사전 준비:
   공공데이터포털 '식품_일반음식점_서울특별시' CSV (LOCALDATA 이관 후 버전, 2026-10 확인)
@@ -6,14 +6,16 @@
 
 출력:
   data/seoul_restaurants.csv   서울 전체, 폐업 포함 (생존분석 라벨)
-  data/yeonhui_restaurants.csv 연희동, 폐업 포함
+  data/area_restaurants.csv    AI 분석 지역, 폐업 포함 (dong: 법정동, area_name: 상권 이름)
+
+서울 전체 파일이 이미 있으면 원본 CSV를 다시 읽지 않고 지역만 다시 고른다 (원본부터 다시: --refresh)
 """
 import sys
 
 import pandas as pd
 from pyproj import Transformer
 
-from common import DATA, RAW, TARGET_DONG, TARGET_GU
+from common import AREA_ORDER, DATA, RAW, TARGET_AREAS
 
 # 원본 컬럼명은 배포처/시기마다 조금씩 달라서 후보를 여러 개 둔다.
 COLUMN_ALIASES = {
@@ -66,7 +68,7 @@ def build_rename(columns):
     return rename
 
 
-def main():
+def build_seoul():
     path = find_csv()
     enc = detect_encoding(path)
     print(f"읽는 중: {path.name} ({enc})")
@@ -102,17 +104,32 @@ def main():
 
     df = df.drop_duplicates("mgt_no")
     df.to_csv(DATA / "seoul_restaurants.csv", index=False, encoding="utf-8-sig")
+    print(f"좌표 없는 행 비율: {(~has_xy).mean():.1%}")
+    return df
 
-    in_gu = df["addr_jibun"].str.contains(TARGET_GU, na=False) | df["addr_road"].str.contains(TARGET_GU, na=False)
-    in_dong = df["addr_jibun"].str.contains(TARGET_DONG, na=False) | df["addr_road"].str.contains(f"({TARGET_DONG}", na=False, regex=False)
-    target = df[in_gu & in_dong]
-    target.to_csv(DATA / "yeonhui_restaurants.csv", index=False, encoding="utf-8-sig")
+
+def main():
+    seoul_path = DATA / "seoul_restaurants.csv"
+    if seoul_path.exists() and "--refresh" not in sys.argv:
+        df = pd.read_csv(seoul_path, dtype={"mgt_no": str}, low_memory=False)
+        print(f"저장된 서울 파일 사용: {len(df):,}건 (원본부터 다시 하려면 --refresh)")
+    else:
+        df = build_seoul()
+
+    # 지번 주소의 구·법정동으로 지역을 고른다 (도로명 주소 괄호 안 동 이름은 행정동이 섞여 있어 보조로만)
+    gu = df["addr_jibun"].str.extract(r"서울특별시\s+(\S+구)")[0].fillna(df["addr_road"].str.extract(r"서울특별시\s+(\S+구)")[0])
+    dong = df["addr_jibun"].str.extract(r"\S+구\s+(\S+동)")[0].fillna(df["addr_road"].str.extract(r"\((\S+동)[,)]")[0])
+    df["dong"] = dong
+    df["area_name"] = [TARGET_AREAS.get((g, d)) for g, d in zip(gu, dong)]
+    target = df[df["area_name"].notna()]
+    target.to_csv(DATA / "area_restaurants.csv", index=False, encoding="utf-8-sig")
 
     open_now = target[target["closed"] == 0]
-    print(f"{TARGET_DONG}: 전체 {len(target):,}건 / 영업 중 {len(open_now):,}건 / 폐업 {target['closed'].sum():,}건")
+    print(f"AI 분석 지역: 전체 {len(target):,}건 / 영업 중 {len(open_now):,}건 / 폐업 {target['closed'].sum():,}건")
+    print("지역별 영업 중:")
+    print(open_now["area_name"].value_counts().reindex(AREA_ORDER).to_string())
     print("영업 중 업태 분포:")
     print(open_now["category"].value_counts().head(15).to_string())
-    print(f"좌표 없는 행 비율: {(~has_xy).mean():.1%}")
 
 
 if __name__ == "__main__":

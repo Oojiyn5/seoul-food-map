@@ -15,9 +15,19 @@ for d in (DATA, RAW, CACHE):
 
 SECRETS_PATH = ROOT / ".streamlit" / "secrets.toml"
 
-# 대상 지역 (지도에 표시할 범위). 모델 학습은 서울 전체를 사용한다.
-TARGET_GU = "서대문구"
-TARGET_DONG = "연희동"
+# AI 전체 분석 지역 (구, 법정동) → 상권 이름. 블로그·네이버 지도 검색어에는 사람들이 실제로 쓰는 상권 이름을 붙인다.
+# 서울 전체는 생존력·위생만 계산한다. 모델 학습은 서울 전체를 사용한다.
+TARGET_AREAS = {
+    ("서대문구", "연희동"): "연희동",
+    ("마포구", "연남동"): "연남동",
+    ("서대문구", "창천동"): "신촌",
+    ("마포구", "노고산동"): "신촌",
+    ("마포구", "서교동"): "홍대",
+    ("마포구", "동교동"): "홍대",
+    ("마포구", "합정동"): "합정",
+    ("마포구", "상수동"): "상수",
+}
+AREA_ORDER = ["연희동", "연남동", "신촌", "홍대", "합정", "상수"]
 
 
 def secret(name: str) -> str:
@@ -70,3 +80,39 @@ class JsonCache:
         tmp = self.path.with_suffix(".tmp")
         tmp.write_text(json.dumps(self.data, ensure_ascii=False), "utf-8")
         tmp.replace(self.path)
+
+
+NL = "\n"
+
+
+class JsonlCache(JsonCache):
+    """큰 캐시용: 한 줄에 키 하나씩 덧붙여 쓴다. JsonCache처럼 매번 전체 파일을 다시 쓰지 않아서
+    수천 곳을 수집해도 느려지지 않는다. 예전 .json 캐시가 있으면 처음 한 번 옮겨 담는다."""
+
+    def __init__(self, name: str):
+        self.path = CACHE / f"{name}.jsonl"
+        self.data = {}
+        old = CACHE / f"{name}.json"
+        if not self.path.exists() and old.exists():
+            with self.path.open("w", encoding="utf-8") as f:
+                for k, v in json.loads(old.read_text("utf-8")).items():
+                    f.write(json.dumps([k, v], ensure_ascii=False) + NL)
+        if self.path.exists():
+            with self.path.open(encoding="utf-8") as f:
+                for line in f:
+                    try:
+                        k, v = json.loads(line)
+                    except ValueError:
+                        continue  # 쓰다 끊긴 마지막 줄
+                    self.data[k] = v
+        ends_clean = not self.path.exists() or self.path.stat().st_size == 0 or self.path.read_bytes()[-1:] == NL.encode()
+        self._f = self.path.open("a", encoding="utf-8")
+        if not ends_clean:
+            self._f.write(NL)  # 끊긴 줄 뒤에 바로 이어 쓰지 않게
+
+    def __setitem__(self, key, value):
+        self.data[key] = value
+        self._f.write(json.dumps([key, value], ensure_ascii=False) + NL)
+
+    def save(self):
+        self._f.flush()

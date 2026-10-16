@@ -2,12 +2,12 @@
 
 가게를 '개업 후 k년차' 구간으로 쪼갠 가게-연도 데이터를 만들고,
 "그 해 초에 살아 있던 가게가 1년 안에 폐업하는가"를 학습한다.
-이미 오래 버틴 가게의 위험을 따로 계산할 수 있고, 연도별 경기(코로나 등)도 반영된다.
+이미 오래 운영한 가게의 위험을 따로 계산할 수 있고, 연도별 경기(코로나 등)도 반영된다.
 
 검증: 2021년까지 끝난 구간으로 학습 → 2022~2024년에 시작한 구간으로 평가 (시간 분할)
-입력:  data/seoul_restaurants.csv, data/yeonhui_restaurants.csv
+입력:  data/seoul_restaurants.csv, data/area_restaurants.csv
 출력:  analysis/output/model_summary.txt, model_*.png
-       data/yeonhui_survival.csv   연희동 영업 중 가게의 3년 폐업 위험과 주요 요인
+       data/seoul_survival.csv     서울 영업 중 가게 전체의 3년 폐업 위험과 주요 요인(SHAP)
 실행:  python survival_model.py
 """
 import matplotlib
@@ -271,7 +271,7 @@ def main():
     log((imp / imp.sum()).map("{:.1%}".format).rename(index=LABELS).to_string())
 
     log("\n서울 영업 중 가게 3년 폐업 위험 계산 중...")
-    # 서울 영업 중 가게 전체의 향후 3년 폐업 위험 → 연희동 가게의 상대 순위
+    # 서울 영업 중 가게 전체의 향후 3년 폐업 위험과 서울 안 상대 순위
     active = d[d["closed"] == 0].copy()
     age_now = ((TODAY - active["open_date"]).dt.days // 365.25).astype(int)
     surv = np.ones(len(active))
@@ -294,44 +294,57 @@ def main():
     log("영업 연수별 3년 위험 중앙값: " + ", ".join(
         f"{k} {v:.0%}" for k, v in active.groupby(age_band.values, observed=True)["risk_3y"].median().items()))
 
-    yh = pd.read_csv(DATA / "yeonhui_restaurants.csv", dtype={"mgt_no": str})
-    yh = yh[yh["closed"] == 0]
-    is_yh = active["mgt_no"].isin(yh["mgt_no"]).values
-    log(f"\n연희동 영업 중 {len(yh)}곳 중 모델 대상 {is_yh.sum()}곳 "
-        f"(1990년 이전 개업 등 제외 {len(yh) - is_yh.sum()}곳)")
+    area = pd.read_csv(DATA / "area_restaurants.csv", dtype={"mgt_no": str})
+    area = area[area["closed"] == 0]
+    is_area = active["mgt_no"].isin(area["mgt_no"]).values
+    log(f"\nAI 분석 지역 영업 중 {len(area)}곳 중 모델 대상 {is_area.sum()}곳 "
+        f"(1990년 이전 개업 등 제외 {len(area) - is_area.sum()}곳)")
 
-    log("SHAP 요인 계산 중...")
-    # SHAP: 올해 폐업 위험을 높이거나 낮추는 요인 상위 3개
-    xy = first_year_x[is_yh]
-    sv = shap.TreeExplainer(final).shap_values(xy[FEATURES])
-    sv = sv[1] if isinstance(sv, list) else sv
-    # 연도(예측 시 모두 같은 값)와 자치구(연희동은 모두 서대문구)는 가게마다 같아서 가게별 요인으로 보여주지 않는다
-    shown_idx = [i for i, f in enumerate(FEATURES) if f not in ("cal_year", "gu")]
+    # SHAP: 올해 폐업 위험을 높이거나 낮추는 요인 상위 3개. 서울 영업 중 가게 전부 (10만 곳 넘어서 체크포인트에 저장)
+    shap_path = CKPT / "shap_active.npy"
+    if shap_path.exists() and np.load(shap_path, mmap_mode="r").shape[0] == len(first_year_x):
+        sv = np.load(shap_path)
+        log("저장된 SHAP 값 사용")
+    else:
+        log(f"SHAP 요인 계산 중... ({len(first_year_x):,}곳, 5만 곳씩)")
+        explainer = shap.TreeExplainer(final)
+        parts = []
+        for i in range(0, len(first_year_x), 50_000):
+            v = explainer.shap_values(first_year_x[FEATURES].iloc[i:i + 50_000])
+            parts.append(v[1] if isinstance(v, list) else v)
+            log(f"  {min(i + 50_000, len(first_year_x)):,}/{len(first_year_x):,}")
+        sv = np.concatenate(parts).astype(np.float32)
+        np.save(shap_path, sv)
+    # 연도는 예측할 때 모두 같은 값이라 가게별 요인으로 보여주지 않는다
+    shown_idx = [i for i, f in enumerate(FEATURES) if f != "cal_year"]
     up, down = [], []
     for row in sv:
         order = [i for i in np.argsort(row) if i in shown_idx]
         up.append(", ".join(LABELS[FEATURES[i]] for i in order[::-1][:3] if row[i] > 0))
         down.append(", ".join(LABELS[FEATURES[i]] for i in order[:3] if row[i] < 0))
-    shown = xy[FEATURES].copy()
+    shown = first_year_x.loc[is_area, FEATURES].copy()
     for c in CAT_FEATURES:
         shown[c] = shown[c].cat.codes  # 색 표시용 숫자 변환
-    shap.summary_plot(sv, shown.rename(columns=LABELS), show=False, max_display=12)
-    plt.title("연희동 가게의 올해 폐업 위험 요인 (SHAP)")
+    shap.summary_plot(sv[is_area], shown.rename(columns=LABELS), show=False, max_display=12)
+    plt.title("AI 분석 지역 가게의 올해 폐업 위험 요인 (SHAP)")
     plt.tight_layout()
-    plt.savefig(OUT / "model_shap_yeonhui.png", dpi=120)
+    plt.savefig(OUT / "model_shap_area.png", dpi=120)
     plt.close()
 
-    res = active.loc[is_yh, ["mgt_no", "name", "category", "open_date"]].copy()
-    res["age_years"] = age_now[is_yh].values
-    res["risk_3y"] = active.loc[is_yh, "risk_3y"].round(3).values
-    res["risk_pct_seoul"] = active.loc[is_yh, "risk_pct"].round(3).values  # 서울 영업 중 가게 중 위험 순위
+    res = active[["mgt_no", "name", "category", "gu", "open_date"]].copy()
+    res["age_years"] = age_now.values
+    res["risk_3y"] = active["risk_3y"].round(3).values
+    res["risk_pct_seoul"] = active["risk_pct"].round(3).values  # 서울 영업 중 가게 중 위험 순위
     res["survival_score"] = (100 * (1 - res["risk_pct_seoul"])).round().astype(int)
     res["risk_up"] = up
     res["risk_down"] = down
-    res.sort_values("risk_3y").to_csv(DATA / "yeonhui_survival.csv", index=False, encoding="utf-8-sig")
+    res.to_csv(DATA / "seoul_survival.csv", index=False, encoding="utf-8-sig")
     log(f"서울 영업 중 가게 3년 폐업 위험 중앙값 {active['risk_3y'].median():.0%}, "
-        f"연희동 중앙값 {res['risk_3y'].median():.0%}")
-    log("→ data/yeonhui_survival.csv")
+        f"AI 분석 지역 중앙값 {res.loc[is_area, 'risk_3y'].median():.0%}")
+    gu_med = res.groupby("gu")["risk_3y"].median().sort_values()
+    log("자치구별 3년 위험 중앙값: 낮은 곳 " + ", ".join(f"{g} {v:.0%}" for g, v in gu_med.head(3).items())
+        + " / 높은 곳 " + ", ".join(f"{g} {v:.0%}" for g, v in gu_med.tail(3).items()))
+    log(f"→ data/seoul_survival.csv ({len(res):,}곳)")
 
     (OUT / "model_summary.txt").write_text("\n".join(lines), encoding="utf-8")
 
