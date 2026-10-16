@@ -502,7 +502,7 @@ async function loadModel() {
     quantized: true,
     progress_callback: (p) => { if (p.status === "progress") $("#aiStatus").textContent = `AI 모델 내려받는 중 ${Math.round(p.progress)}%`; },
   });
-  $("#aiStatus").textContent = "AI 검색 켜짐 · 블로그 글의 의미로 찾아요";
+  $("#aiStatus").textContent = "AI 검색 켜짐 · 블로그 글의 의미로 찾아요 (블로그 글이 없는 가게는 제외)";
   return extractor;
 }
 // 가게 임베딩은 AI 검색을 켤 때만 받는다 (약 3MB)
@@ -623,7 +623,7 @@ map.on("moveend", () => {
 const mini = (label, x) => `<div class="mini${x == null ? " na" : ""}">${label}<div class="track"><i style="width:${Math.round((x ?? 0) * 100)}%"></i></div></div>`;
 function badges(r) {
   const i = r.info || {}, out = [];
-  if (r.closure) out.push('<span class="tag bad">폐업 소식</span>');
+  if (r.closure) out.push(`<span class="tag bad">${r.closure.source === "구글" ? "폐업 소식" : "폐업 글 있음"}</span>`);
   if (r.hygiene.warning) out.push('<span class="tag bad">행정처분 이력</span>');
   if (r.open === true) out.push('<span class="tag good">영업 중</span>');
   if (r.google?.status === "CLOSED_TEMPORARILY") out.push('<span class="tag warn">임시 휴업</span>');
@@ -938,7 +938,7 @@ const survTile = (score, age) => (score != null
 function detail(r) {
   const g = r.google, b = r.blog, s = r.survival, i = r.info || {};
   const taste = r.taste_ == null
-    ? `<div class="v" style="color:var(--muted)">–</div><div class="s">평점 정보 없음</div>`
+    ? `<div class="v" style="color:var(--muted)">–</div><div class="s">평점 정보 없음 · 구글 평점은 무료 한도로 일부 가게만 받았어요</div>`
     : r.tasteEst
       ? `<div class="v">${r.taste_.toFixed(1)}<small>/5</small></div><div class="s">블로그로 추정한 구글 평점 · 참고용</div>${track(r.taste)}`
       : `<div class="v">${g.bayes.toFixed(1)}<small>/5</small></div><div class="s">구글 리뷰 ${g.count.toLocaleString()}개 · 원래 ${g.rating ?? "-"}</div>${track(r.taste)}`;
@@ -952,7 +952,7 @@ function detail(r) {
     <div class="d-cat">${esc(r.area)} · ${esc(r.category || "")}${g?.price ? " · " + PRICE[g.price] : ""} · ${ageText(s.age)} 영업</div>
     <div class="d-name">${esc(r.name)}</div>
     <div class="d-addr">${esc(r.addr || "")}</div>
-    ${r.closure ? `<div class="d-alert" style="background:var(--bad-soft);color:var(--bad)">폐업 소식이 있어요 · ${esc(r.closure.title)}${r.closure.date ? ` (${esc(r.closure.date)})` : ""}${r.closure.link ? ` <a href="${esc(r.closure.link)}" target="_blank" rel="noopener">근거 보기</a>` : ""}<br><span style="font-weight:500">인허가 데이터엔 아직 영업 중이라, 방문 전 꼭 확인하세요.</span></div>` : ""}
+    ${r.closure ? `<div class="d-alert" style="background:var(--bad-soft);color:var(--bad)">${r.closure.source === "구글" ? "폐업 소식이 있어요" : "블로그에 폐업했다는 글이 있어요(확인 필요)"} · ${esc(r.closure.title)}${r.closure.date ? ` (${esc(r.closure.date)})` : ""}${r.closure.link ? ` <a href="${esc(r.closure.link)}" target="_blank" rel="noopener">근거 보기</a>` : ""}<br><span style="font-weight:500">인허가 데이터엔 아직 영업 중이라, 방문 전 꼭 확인하세요.</span></div>` : ""}
     ${g?.status === "CLOSED_TEMPORARILY" ? '<div class="d-alert">구글 지도에 임시 휴업으로 표시돼 있어요</div>' : ""}
     ${r.hygiene.warning ? '<div class="d-alert" style="background:var(--bad-soft);color:var(--bad)">최근 2년 안에 공개된 행정처분이 있어요</div>' : ""}
     <div class="stats">

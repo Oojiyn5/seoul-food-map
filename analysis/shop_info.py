@@ -38,6 +38,15 @@ PARK_PUBLIC = r"공영\s*주차장"
 PARK_YES = r"주차\s*(가능|공간\s*(있|넉넉)|(가|도)?\s*(돼|되|편)|할\s*수\s*있)|전용\s*주차|발레|발렛|주차장\s*(이|은)?\s*(있|완비|넓)"
 
 CLOSE_TITLE = r"폐업|문\s*(을\s*)?닫|영업\s*(을\s*)?종료"   # '마지막 영업'은 예능 회차 기사 등에 걸려서 뺌
+# 폐업이 아닌 제목: "폐업설 해명", "폐업X", "문 닫지 않아요", "문 닫을 때까지", "옆집이 문 닫아서"
+CLOSE_NOT = r"폐업\s*(설|X|x|논란|탈출|위기|직전|해명|아님)|해명|논란|문\s*닫(지|을\s*때|아서)|문닫(지|을|아서)|닫지\s*않"
+# 다른 지역 지점·다른 가게 이야기일 가능성이 큰 제목: 분석 지역 밖 지명이 들어 있으면 뺀다
+OTHER_PLACE = r"논현|강남|잠실|해운대|용산|건대|성수|이태원|여의도|부산|제주|종로|명동|송파|방이|서래|청담|압구정|대치|판교|수원|인천|대전|대구|강릉|속초|이촌"
+# 폐업 소식은 2020년 이후 글만 (더 오래된 글은 이전·재개업했을 수 있다)
+CLOSE_FROM = 20200101
+# 체인 지점('○○ 홍대점')은 제목에 다른 상권 이름만 있으면 다른 지점 글이다 ("신촌 새마을식당 폐업" ≠ 홍대서교점)
+AREA_TOKENS = {"연희동": ["연희"], "연남동": ["연남"], "신촌": ["신촌", "창천", "이대", "노고산"],
+               "홍대": ["홍대", "홍익", "서교", "동교"], "합정": ["합정"], "상수": ["상수"]}
 PARTICLE = r"(?:은|는|이|가|을|를|의|에|에서|도|과|와|이다|본점|점)?"
 
 
@@ -84,7 +93,15 @@ def main():
         if word is None:
             continue
         titles = g["title"].fillna("")
-        hit = g[titles.str.contains(CLOSE_TITLE, regex=True) & titles.str.contains(word, regex=True)]
+        own = AREA_TOKENS.get(g["area_name"].iloc[0], [])
+        others = [x for a, ts in AREA_TOKENS.items() for x in ts if x not in own]
+        if re.search(r"\s\S+점$", str(g["name"].iloc[0]).strip()):   # 지점명이 붙은 상호
+            wrong_branch = titles.apply(lambda s: any(x in s for x in others) and not any(x in s for x in own))
+        else:
+            wrong_branch = pd.Series(False, index=g.index)
+        hit = g[titles.str.contains(CLOSE_TITLE, regex=True) & titles.str.contains(word, regex=True)
+                & ~titles.str.contains(CLOSE_NOT, regex=True) & ~titles.str.contains(OTHER_PLACE, regex=True)
+                & ~wrong_branch & (pd.to_numeric(g["postdate"], errors="coerce") >= CLOSE_FROM)]
         if len(hit):
             last = hit.loc[hit["postdate"].idxmax()]
             closure[m] = (len(hit), str(last["postdate"]), last["link"], last["title"])
