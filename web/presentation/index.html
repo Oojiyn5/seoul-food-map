@@ -3,15 +3,15 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>연희동 식당 AI 지도 · 발표 자료</title>
+<title>서울 식당 AI 지도 · 발표 자료</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400..800&display=swap">
 <style>
   html, body { margin: 0; height: 100%; background: #0f0e0d; font-family: 'Noto Sans KR', Arial, sans-serif; }
   .stage { position: fixed; inset: 0; display: grid; place-items: center; overflow: hidden; }
   section { position: absolute; width: 1920px; height: 1080px; box-sizing: border-box; overflow: hidden;
-             transform-origin: center center; display: none; word-break: keep-all; }
-  section.on { display: flex; }
-  section[style*="display:grid"].on { display: grid; }
+             transform-origin: center center; display: none !important; word-break: keep-all; }
+  section.on { display: flex !important; }
+  section[style*="display:grid"].on { display: grid !important; }
   section p, section h1, section h2, section h3, section ul { margin: 0; }
   section ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 10px; }
   section table { border-collapse: separate; border-spacing: 0; width: 100%; overflow: hidden; }
@@ -39,11 +39,11 @@
   <div style="position:absolute; top:128px; left:128px; width:120px; height:12px; display:flex; flex-direction:column; background:#e8590c; border-radius:6px">
   </div>
   <p style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:32px; font-weight:700; letter-spacing:2px; color:#ff8a3d">에너지 시스템 AI · 프로젝트 발표</p>
-  <h1 style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:120px; font-weight:800; line-height:1.1; letter-spacing:-4px; color:#f7f4ef">연희동 식당 AI 지도</h1>
-  <p style="width:1400px; font-family:'Noto Sans KR', Arial, sans-serif; font-size:44px; line-height:1.45; color:#d6d3d1">오래 버텼고, 평이 좋으면서 호불호가 덜 갈리는 식당을<br>먹고 싶은 말로 찾는 지도</p>
-  <p style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:28px; line-height:1.4; color:#e7e2da; background:#2e2a27; padding:14px 28px; border-radius:999px; width:1450px">출발점: 교양 ‘세계음식컨텐츠’의 연희동 중식당 지도 → 이번 수업에서 모든 식당과 AI 모델로 확장</p>
+  <h1 style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:120px; font-weight:800; line-height:1.1; letter-spacing:-4px; color:#f7f4ef">서울 식당 AI 지도</h1>
+  <p style="width:1400px; font-family:'Noto Sans KR', Arial, sans-serif; font-size:44px; line-height:1.45; color:#d6d3d1">오래 운영됐고, 평이 좋으면서 호불호가 덜 갈리는 식당을<br>먹고 싶은 말로 찾는 지도</p>
+  <p style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:28px; line-height:1.4; color:#e7e2da; background:#2e2a27; padding:14px 28px; border-radius:999px; width:1450px">출발점: 교양 ‘세계음식컨텐츠’의 연희동 중식당 지도 → 이번 수업에서 서울 전체와 6개 상권, AI 모델로 확장</p>
   <p style="position:absolute; bottom:96px; left:128px; width:1200px; font-family:'Noto Sans KR', Arial, sans-serif; font-size:28px; color:#a8a29e">상명대학교 전기공학전공 202410929 유지연</p>
-  <aside>안녕하세요. 연희동 식당 AI 지도를 소개하겠습니다. 한 줄로 말하면, 오래 버텼고 평이 좋으면서 호불호가 덜 갈리는 연희동 식당을, 먹고 싶은 걸 문장으로 검색해서 찾는 지도입니다. 이 프로젝트에는 출발점이 있습니다. 교양수업 ‘세계음식컨텐츠’에서 연희동 중식당 지도를 만들었는데, 그때는 중식당만 모아 평점을 보여주는 지도였습니다. 이번 에너지 시스템 AI 수업에서는 그 지도를 연희동의 모든 식당으로 넓히고, 데이터 분석과 AI 모델 네 가지를 더해 한 단계 발전시켰습니다.</aside>
+  <aside>안녕하세요. 서울 식당 AI 지도를 소개하겠습니다. 한 줄로 말하면, 오래 운영됐고 평이 좋으면서 호불호가 덜 갈리는 식당을, 먹고 싶은 걸 문장으로 검색해서 찾는 지도입니다. 이 프로젝트에는 출발점이 있습니다. 교양수업 ‘세계음식컨텐츠’에서 연희동 중식당 지도를 만들었는데, 그때는 중식당만 모아 평점을 보여주는 지도였습니다. 이번 에너지 시스템 AI 수업에서는 그 지도를 연희동의 모든 식당으로 넓히고, 다시 서울 전체와 신촌·홍대 일대 6개 상권으로 확장했습니다. 데이터 분석과 AI 모델 네 가지를 더해 한 단계 발전시켰습니다.</aside>
 </section>
 <section id="problem" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:64px">
 <div style="display:flex;flex-direction:column;gap:16px">
@@ -67,8 +67,8 @@
 <p style="font-size:30px;line-height:1.55;color:#57534e">“웨이팅 없는 조용한 국수집”은 카테고리 검색으로 찾을 수 없다.</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 2</p>
-<aside>기존 맛집 지도에는 세 가지 빈틈이 있습니다. 첫째, 평점은 리뷰 수가 적으면 쉽게 흔들립니다. 둘째, 가게가 얼마나 오래 버틸지 알려주지 않습니다. 서울 일반음식점 인허가 기록 54만 건 중 78%가 이미 폐업했습니다. 셋째, 원하는 걸 문장으로 검색할 수 없습니다.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 2</p>
+<aside>기존 맛집 지도에는 세 가지 빈틈이 있습니다. 첫째, 평점은 리뷰 수가 적으면 쉽게 흔들립니다. 둘째, 가게가 얼마나 오래 운영될지 알려주지 않습니다. 서울 일반음식점 인허가 기록 54만 건 중 78%가 이미 폐업했습니다. 셋째, 원하는 걸 문장으로 검색할 수 없습니다.</aside>
 </section>
 <section id="goal" data-transition="fade" style="display:flex; flex-direction:column; gap:64px; justify-content:center; padding:128px; background:#e8590c">
   <p style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:32px; font-weight:700; color:#1c1917">목표</p>
@@ -80,7 +80,29 @@
     <p style="padding:14px 32px; font-family:'Noto Sans KR', Arial, sans-serif; font-size:32px; font-weight:700; color:#f7f4ef; background:#1c1917; border-radius:256px">④ 말로 검색</p>
     <p style="padding:14px 32px; font-family:'Noto Sans KR', Arial, sans-serif; font-size:32px; font-weight:700; color:#f7f4ef; background:#1c1917; border-radius:256px">⑤ 평점 보정</p>
   </div>
-  <aside>그래서 목표를 한 문장으로 정했습니다. 오래 버텼고, 공개된 위생 처분이 없고, 평이 좋으면서 호불호가 덜 갈리는 식당을 말로 찾는 것입니다. 이 문장의 각 조건이 다섯 가지 AI 기능에 대응합니다. 생존력, 위생 경고, 호불호, 자연어 검색, 평점 보정입니다.</aside>
+  <aside>그래서 목표를 한 문장으로 정했습니다. 오래 운영됐고, 공개된 위생 처분이 없고, 평이 좋으면서 호불호가 덜 갈리는 식당을 말로 찾는 것입니다. 이 문장의 각 조건이 다섯 가지 AI 기능에 대응합니다. 생존력, 위생 경고, 호불호, 자연어 검색, 평점 보정입니다.</aside>
+</section>
+<section id="scope" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:700;color:#c2410c">범위</p>
+<h2 style="font-size:64px;font-weight:800;line-height:1.2;letter-spacing:-2px">서울 전체는 넓게, 6개 상권은 깊게</h2>
+</div>
+<div style="display:flex;gap:32px;flex:1">
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:24px;padding:48px">
+<p style="font-size:28px;font-weight:700;color:#c2410c">서울 전체</p>
+<p style="font-size:96px;font-weight:800;line-height:1;letter-spacing:-3px">118,351곳</p>
+<p style="font-size:30px;line-height:1.55;color:#57534e">영업 중인 모든 식당의 생존력과 위생 경고. 공공데이터만으로 계산한다.</p>
+<p style="font-size:28px;line-height:1.5;color:#57534e">구 25곳 요약, 확대하면 가게 하나하나</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:20px;background:#1c1917;color:#f7f4ef;border-radius:24px;padding:48px">
+<p style="font-size:28px;font-weight:700;color:#ff8a3d">연희·연남·신촌·홍대·합정·상수</p>
+<p style="font-size:96px;font-weight:800;line-height:1;letter-spacing:-3px">5,137곳</p>
+<p style="font-size:30px;line-height:1.55;color:#e7e2da">생존력·위생에 호불호, 말로 검색, 평점 보정, 맛 점수 추정까지 모든 기능.</p>
+</div>
+</div>
+<p style="font-size:28px;line-height:1.5;color:#57534e">구글 평점은 무료 한도(월 1,000건)를 넘으면 유료이고, 서울 전체 블로그 분석은 100시간 이상 걸려서 구글·블로그 기능은 6개 상권으로 한정했다.</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 4</p>
+<aside>범위는 두 단계로 넓혔습니다. 먼저 공공데이터만으로 계산되는 생존력과 위생 경고는 서울 영업 중 11만 8천 곳 전체에 적용했습니다. 다음으로 연희·연남·신촌·홍대·합정·상수 6개 상권 5,137곳에는 블로그 분석, 말로 검색, 평점 보정까지 모든 기능을 넣었습니다. 이렇게 나눈 이유는 구글 평점이 월 1,000건을 넘으면 유료이고, 서울 전체 블로그를 임베딩하면 100시간이 넘게 걸리기 때문입니다.</aside>
 </section>
 <section id="data" data-transition="fade" style="display:flex; flex-direction:column; gap:48px; padding:128px 128px 160px; background:#f7f4ef">
   <div style="display:flex; flex-direction:column; gap:16px">
@@ -89,14 +111,14 @@
   </div>
   <table style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:28px; color:#1c1917; background:#fdfbf8; border:1px solid #e7e2da; border-radius:20px">
     <tr style="background:#efe9e1"><th style="width:22%">데이터</th><th style="width:22%">출처</th><th style="width:30%">규모</th><th style="width:26%">쓰임</th></tr>
-    <tr><td>일반음식점 인허가</td><td>공공데이터포털</td><td>서울 539,850곳<br>연희동 영업 중 391곳</td><td>생존모델 학습</td></tr>
+    <tr><td>일반음식점 인허가</td><td>공공데이터포털</td><td>서울 539,850곳<br>영업 중 118,351곳</td><td>생존모델 학습, 서울 전체 지도</td></tr>
     <tr><td>행정처분</td><td>식품안전나라 API</td><td>서울 372건</td><td>위생 경고</td></tr>
-    <tr><td>장소 정보 · 리뷰</td><td>Google Places API</td><td>299곳 매칭, 리뷰 1,448건</td><td>평점, 감성 정답, 영업시간</td></tr>
-    <tr><td>블로그 글</td><td>네이버 검색 API</td><td>97,325건 수집</td><td>호불호, 키워드, 예약·주차</td></tr>
+    <tr><td>장소 정보 · 리뷰</td><td>Google Places API</td><td>상권 750곳 평점, 리뷰 1,448건</td><td>평점, 감성 정답, 영업시간</td></tr>
+    <tr><td>블로그 글</td><td>네이버 검색 API</td><td>1,472,996건 수집</td><td>호불호, 키워드, 예약·주차, 맛 추정</td></tr>
   </table>
-  <p style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:28px; line-height:1.5; color:#57534e">구글 리뷰·인기 시간대·네이버 리뷰는 <span style="color:#1c1917"><b>크롤링하지 않고</b></span>(약관 위반) 블로그 검색 API로 대신했다.</p>
-  <p style="position:absolute; bottom:64px; left:128px; width:1664px; font-family:'Noto Sans KR', Arial, sans-serif; font-size:24px; color:#8a817a">연희동 식당 AI 지도 · 4</p>
-  <aside>데이터는 모두 공개 API와 공공데이터입니다. 서울 일반음식점 인허가 54만 건으로 생존모델을 학습하고, 지도에는 연희동 영업 중 391곳을 표시합니다. 행정처분은 식품안전나라 API로 받았는데 최근 2년 연희동은 0건이었습니다. 구글 Places로 평점과 리뷰, 네이버 블로그 검색 API로 글 9만 7천 건을 모았습니다. 구글 리뷰가 5개로 제한되지만 크롤링은 약관 위반이라 하지 않았습니다.</aside>
+  <p style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:28px; line-height:1.5; color:#57534e">구글 리뷰·인기 시간대·네이버 리뷰는 <span style="color:#1c1917"><b>크롤링하지 않고</b></span>(약관 위반) 블로그 검색 API로 대신했다. 구글은 무료 한도(월 1,000건) 안에서만 써서 평점이 있는 가게는 일부다.</p>
+  <p style="position:absolute; bottom:64px; left:128px; width:1664px; font-family:'Noto Sans KR', Arial, sans-serif; font-size:24px; color:#8a817a">서울 식당 AI 지도 · 5</p>
+  <aside>데이터는 모두 공개 API와 공공데이터입니다. 서울 일반음식점 인허가 54만 건으로 생존모델을 학습하고, 지도에는 서울 영업 중 11만 8천 곳을 생존력으로, 6개 상권 5,137곳은 모든 기능으로 표시합니다. 행정처분은 식품안전나라 API로 받았고 최근 2년 서울 372건이었습니다. 구글 Places로 평점과 리뷰, 네이버 블로그 검색 API로 글 147만 건을 모았습니다. 구글은 무료 한도 안에서만 써서 평점이 있는 가게는 일부이고, 리뷰가 5개로 제한되지만 크롤링은 약관 위반이라 하지 않았습니다.</aside>
 </section>
 <section id="pipeline" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:72px">
 <div style="display:flex;flex-direction:column;gap:16px">
@@ -121,7 +143,7 @@
 <span style="font-size:44px;color:#c9c1b6;flex:none">→</span>
 <div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:20px;padding:32px 28px;align-self:stretch">
 <h3 style="font-size:36px;font-weight:800;color:#c2410c">JSON</h3>
-<p style="font-size:28px;line-height:1.5;color:#57534e">386곳의 점수·정보·검색 벡터 (680KB)</p>
+<p style="font-size:28px;line-height:1.5;color:#57534e">상권 5,137곳의 점수·검색 벡터와 서울 11.8만 곳 요약 (약 21MB)</p>
 </div>
 <span style="font-size:44px;color:#c9c1b6;flex:none">→</span>
 <div style="flex:1;display:flex;flex-direction:column;gap:14px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:20px;padding:32px 28px;align-self:stretch">
@@ -130,8 +152,8 @@
 </div>
 </div>
 <p style="font-size:28px;line-height:1.5;color:#57534e">AI 검색만 브라우저에서 실행: 질문 문장을 그 자리에서 임베딩해 미리 계산한 가게 벡터와 비교한다.</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 5</p>
-<aside>전체 흐름입니다. 데이터를 수집하고, 축제 임시 부스 같은 잡음을 걸러낸 뒤, AI 모델 네 가지를 Python에서 미리 돌립니다. 결과를 386곳짜리 JSON 한 파일로 내보내면, 지도는 그 파일만 읽어서 보여줍니다. 그래서 서버가 필요 없고 GitHub Pages에 무료로 올릴 수 있습니다. 예외는 AI 검색인데, 질문 문장만 브라우저에서 임베딩해서 미리 계산해 둔 가게 벡터와 비교합니다.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 6</p>
+<aside>전체 흐름입니다. 데이터를 수집하고, 축제 임시 부스 같은 잡음을 걸러낸 뒤, AI 모델 네 가지를 Python에서 미리 돌립니다. 결과를 JSON 파일로 내보내면(상권 5,137곳, 서울 11만 8천 곳은 구별 파일, 합쳐 약 21MB), 지도는 그 파일만 읽어서 보여줍니다. 그래서 서버가 필요 없고 GitHub Pages에 무료로 올릴 수 있습니다. 예외는 AI 검색인데, 질문 문장만 브라우저에서 임베딩해서 미리 계산해 둔 가게 벡터와 비교합니다.</aside>
 </section>
 <section id="survmethod" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
 <div style="display:flex;flex-direction:column;gap:16px">
@@ -147,7 +169,7 @@
 <p style="flex:1;font-size:28px;font-weight:700;text-align:center;background:#e9f5ec;color:#1f6b33;padding:22px 8px;border-radius:14px">3년차<br>생존</p>
 <p style="flex:1;font-size:28px;font-weight:700;text-align:center;background:#fde3d3;color:#9a3412;padding:22px 8px;border-radius:14px">4년차<br>폐업</p>
 </div>
-<p style="font-size:28px;line-height:1.55;color:#57534e">1990년 이후 개업 <b style="color:#1c1917">486,981곳</b> → 가게-연도 <b style="color:#1c1917">3,455,560행</b>. 오래 버틴 가게의 위험과 해마다 다른 경기(코로나 등)를 따로 볼 수 있다.</p>
+<p style="font-size:28px;line-height:1.55;color:#57534e">1990년 이후 개업 <b style="color:#1c1917">486,981곳</b> → 가게-연도 <b style="color:#1c1917">3,455,560행</b>. 오래 운영된 가게의 위험과 해마다 다른 경기(코로나 등)를 따로 볼 수 있다.</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:28px">
 <div style="display:flex;flex-direction:column;gap:8px">
@@ -164,7 +186,7 @@
 </div>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 6</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 7</p>
 <aside>첫 번째 모델은 생존력입니다. 가게 하나를 1년 단위 구간으로 쪼개서, 그해 안에 문을 닫는지를 맞히는 이산시간 생존모델을 LightGBM으로 학습했습니다. 1990년 이후 개업한 가게 48만 곳이 346만 행이 됩니다. 주변 식당 수 같은 특성은 반드시 그 당시 기준으로 계산했고, 2021년까지로 학습해서 2022년부터 2024년으로 평가했습니다. 1990년 이전 개업은 폐업 기록이 없어 생존기간이 부풀려지므로 뺐습니다.</aside>
 </section>
 <section id="survresult" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
@@ -196,13 +218,13 @@
 <p style="font-size:26px;line-height:1.5;color:#a8a29e">실제 폐업률 11.1%, 평균 예측 9.4%로 조금 낮게 예측 → 지도엔 “서울 영업 중 식당 중 순위”로 표시</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 7</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 8</p>
 <aside>결과입니다. AUC는 단순 규칙 0.592, Cox 0.611, LightGBM 0.632로 LightGBM이 가장 좋았습니다. 다만 인허가 정보만으로는 어느 정도까지만 예측된다는 뜻이라, 지도에는 확률 대신 서울 영업 중 식당 가운데 몇 번째로 안전한지, 순위로 보여줍니다. 결과가 상식과 맞는지도 확인했는데, 개업 2년 이하 가게의 3년 폐업 위험 중앙값은 35%, 21년 이상 가게는 19%였습니다.</aside>
 </section>
 <section id="survexplain" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
 <div style="display:flex;flex-direction:column;gap:16px">
 <p style="font-size:28px;font-weight:700;color:#c2410c">① 생존력 · 해석</p>
-<h2 style="font-size:64px;font-weight:800;line-height:1.2;letter-spacing:-2px">무엇이 가게를 오래 버티게 하나</h2>
+<h2 style="font-size:64px;font-weight:800;line-height:1.2;letter-spacing:-2px">무엇이 가게의 생존력을 높이나</h2>
 </div>
 <div style="display:flex;gap:64px">
 <div style="flex:1.1;display:flex;flex-direction:column;gap:20px">
@@ -211,7 +233,7 @@
 <tr style="background:#efe9e1"><th style="width:52%">요인</th><th style="width:20%;text-align:right">위험비</th><th style="width:28%">해석</th></tr>
 <tr><td>분식</td><td style="text-align:right">1.37</td><td>37% 빨리 폐업</td></tr>
 <tr><td>경양식</td><td style="text-align:right">1.33</td><td>33% 빨리 폐업</td></tr>
-<tr><td>중식</td><td style="text-align:right">0.83</td><td>17% 오래 버팀</td></tr>
+<tr><td>중식</td><td style="text-align:right">0.83</td><td>17% 오래 운영됨</td></tr>
 <tr><td>면적 (로그 1단위 클수록)</td><td style="text-align:right">0.83</td><td>클수록 오래</td></tr>
 <tr><td>주변 식당 수 (로그)</td><td style="text-align:right">0.97</td><td>상권일수록 오래</td></tr>
 </table>
@@ -220,33 +242,33 @@
 <p style="font-size:26px;font-weight:700;color:#c2410c">가게별 설명 (SHAP) · 예: 호천식당</p>
 <div style="display:flex;align-items:baseline;gap:16px"><p style="font-size:88px;font-weight:800;line-height:1;letter-spacing:-3px">70</p><p style="font-size:30px;color:#57534e">/ 100점 · 15년째 영업</p></div>
 <div style="display:flex;flex-direction:column;gap:6px;background:#e9f5ec;border-radius:14px;padding:18px 22px">
-<p style="font-size:26px;font-weight:700;color:#1f6b33">오래 버티게 하는 점</p>
+<p style="font-size:26px;font-weight:700;color:#1f6b33">생존력을 높이는 점</p>
 <p style="font-size:28px">영업 연수, 면적, 업태</p>
 </div>
 <div style="display:flex;flex-direction:column;gap:6px;background:#fde3d3;border-radius:14px;padding:18px 22px">
-<p style="font-size:26px;font-weight:700;color:#9a3412">위험을 높이는 점</p>
-<p style="font-size:28px">상호 길이, 개인 상호(지점 아님), 위치</p>
+<p style="font-size:26px;font-weight:700;color:#9a3412">생존력을 낮추는 점</p>
+<p style="font-size:28px">상호 길이, 자치구, 개인 상호(지점 아님)</p>
 </div>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 8</p>
-<aside>모델을 해석해 보면, Cox 기준으로 분식과 경양식은 한식보다 30% 넘게 빨리 폐업하고, 중식은 17% 오래 버팁니다. 면적이 크고 주변에 식당이 많은 상권일수록 오래 갑니다. 지도에서는 가게마다 SHAP으로 무엇이 점수를 올리고 내렸는지 보여줍니다. 예를 들어 호천식당은 70점인데, 15년 영업한 것과 면적이 버팀 요인입니다. 참고로 모든 가게에 똑같이 적용되는 연도와 자치구 요인은 설명에서 뺐습니다.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 9</p>
+<aside>모델을 해석해 보면, Cox 기준으로 분식과 경양식은 한식보다 30% 넘게 빨리 폐업하고, 중식은 17% 오래 운영됩니다. 면적이 크고 주변에 식당이 많은 상권일수록 오래 운영됩니다. 지도에서는 가게마다 SHAP으로 무엇이 점수를 올리고 내렸는지 보여줍니다. 예를 들어 호천식당은 70점인데, 15년 영업한 것과 면적이 생존력을 높이는 요인입니다. 참고로 모든 가게에 똑같이 적용되는 연도 요인은 설명에서 뺐습니다.</aside>
 </section>
 <section id="funnel" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:52px">
 <div style="display:flex;flex-direction:column;gap:16px">
 <p style="font-size:28px;font-weight:700;color:#c2410c">③ 블로그 정제</p>
-<h2 style="font-size:64px;font-weight:800;line-height:1.2;letter-spacing:-2px">블로그 9.7만 건 중 믿을 만한 3.6만 건만 쓴다</h2>
+<h2 style="font-size:64px;font-weight:800;line-height:1.2;letter-spacing:-2px">블로그 147만 건 중 믿을 만한 30만 건만 분석한다</h2>
 </div>
 <div style="display:flex;flex-direction:column;gap:22px">
-<div style="display:flex;align-items:center;gap:28px"><div style="width:1100px;height:56px;background:#d6cfc5;border-radius:8px"></div><p style="font-size:30px"><b>97,325</b> 수집</p></div>
-<div style="display:flex;align-items:center;gap:28px"><div style="width:491px;height:56px;background:#f5b98f;border-radius:8px"></div><p style="font-size:30px"><b>43,433</b> 상호가 실제로 언급된 글</p></div>
-<div style="display:flex;align-items:center;gap:28px"><div style="width:433px;height:56px;background:#f0995c;border-radius:8px"></div><p style="font-size:30px"><b>38,354</b> ‘가을’ 같은 짧은 상호는 제목 언급만</p></div>
-<div style="display:flex;align-items:center;gap:28px"><div style="width:421px;height:56px;background:#ec7a35;border-radius:8px"></div><p style="font-size:30px"><b>37,277</b> 연희동 주변 지명 포함 (체인 다른 지점 제외)</p></div>
-<div style="display:flex;align-items:center;gap:28px"><div style="width:407px;height:56px;background:#e8590c;border-radius:8px"></div><p style="font-size:30px"><b style="color:#c2410c">35,974</b> 광고·체험단 1.5%, 식당과 무관한 글 2% 제외</p></div>
+<div style="display:flex;align-items:center;gap:28px"><div style="width:1100px;height:56px;background:#d6cfc5;border-radius:8px"></div><p style="font-size:30px"><b>1,472,996</b> 수집</p></div>
+<div style="display:flex;align-items:center;gap:28px"><div style="width:630px;height:56px;background:#f5b98f;border-radius:8px"></div><p style="font-size:30px"><b>843,170</b> 상호가 실제로 언급된 글</p></div>
+<div style="display:flex;align-items:center;gap:28px"><div style="width:573px;height:56px;background:#f0995c;border-radius:8px"></div><p style="font-size:30px"><b>767,391</b> ‘가을’ 같은 짧은 상호는 제목 언급만</p></div>
+<div style="display:flex;align-items:center;gap:28px"><div style="width:559px;height:56px;background:#ec7a35;border-radius:8px"></div><p style="font-size:30px"><b>748,859</b> 분석 지역 주변 지명 포함 (체인 다른 지점 제외)</p></div>
+<div style="display:flex;align-items:center;gap:28px"><div style="width:226px;height:56px;background:#e8590c;border-radius:8px"></div><p style="font-size:30px"><b style="color:#c2410c">303,106</b> 가게당 최근 100건까지, 광고·체험단 4.6%와 식당과 무관한 글 2% 제외</p></div>
 </div>
 <p style="font-size:28px;line-height:1.5;color:#57534e">체험단 원고 = 같은 가게에 대해 다른 블로거 2명 이상이 거의 같은 문장을 쓴 글 (글자 n-gram 유사도)</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 9</p>
-<aside>호불호와 검색에는 네이버 블로그를 씁니다. 그런데 검색 결과에는 다른 가게 글이 많이 섞여서 단계별로 걸렀습니다. 상호가 실제로 언급된 글만 남기고, 가을이나 우주처럼 짧은 상호는 제목에 있어야 인정했습니다. 김밥천국 같은 체인은 다른 지점 글이 섞여서 연희동 주변 지명이 있는 글만 남겼습니다. 마지막으로 협찬 문구, 여러 블로거가 같은 문장을 쓴 체험단 원고, 그리고 전시회나 건물 경매 기사처럼 식당과 무관한 글을 뺐습니다. 9만 7천 건 중 3만 6천 건이 남았습니다.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 10</p>
+<aside>호불호와 검색에는 네이버 블로그를 씁니다. 그런데 검색 결과에는 다른 가게 글이 많이 섞여서 단계별로 걸렀습니다. 상호가 실제로 언급된 글만 남기고, 가을이나 우주처럼 짧은 상호는 제목에 있어야 인정했습니다. 김밥천국 같은 체인은 다른 지점 글이 섞여서 분석 지역 주변 지명이 있는 글만 남겼습니다. 가게 5천 곳의 글을 전부 임베딩하면 시간이 너무 걸려서 가게당 최근 100건까지만 분석했습니다. 마지막으로 협찬 문구, 여러 블로거가 같은 문장을 쓴 체험단 원고 4.6%, 그리고 전시회나 건물 경매 기사처럼 식당과 무관한 글을 뺐습니다. 147만 건 중 30만 3천 건이 남았습니다.</aside>
 </section>
 <section id="sentiment" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
 <div style="display:flex;flex-direction:column;gap:16px">
@@ -261,19 +283,19 @@
 <p style="font-size:26px;line-height:1.5;color:#57534e">구글 리뷰 1,448건 5겹 교차검증, 부정 재현율 86%</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:24px;padding:44px">
-<p style="font-size:100px;font-weight:800;line-height:1;letter-spacing:-3px">1.4%</p>
+<p style="font-size:100px;font-weight:800;line-height:1;letter-spacing:-3px">3.0%</p>
 <p style="font-size:30px;font-weight:700">블로그 중 부정 글</p>
 <p style="font-size:26px;line-height:1.5;color:#57534e">광고를 걸러도 블로그는 대부분 긍정적</p>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:24px;padding:44px">
-<p style="font-size:100px;font-weight:800;line-height:1;letter-spacing:-3px">0.15</p>
+<p style="font-size:100px;font-weight:800;line-height:1;letter-spacing:-3px">0.17</p>
 <p style="font-size:30px;font-weight:700">구글 평점과의 상관</p>
-<p style="font-size:26px;line-height:1.5;color:#57534e">순위상관 ρ, 118곳, p = 0.10으로 약함</p>
+<p style="font-size:26px;line-height:1.5;color:#57534e">순위상관 ρ, 475곳, 통계적으로 유의하지만 약함</p>
 </div>
 </div>
 <p style="font-size:30px;font-weight:700;background:#1c1917;color:#f7f4ef;padding:22px 32px;border-radius:16px">→ 호불호 지수는 추천 점수의 20%만 반영하고, 화면에는 “참고용”으로 표시</p>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 10</p>
-<aside>감성분석은 구글 리뷰 별점을 정답으로 학습했습니다. 4~5점은 긍정, 1~2점은 부정입니다. 교차검증 AUC가 0.96으로 모델 자체는 정확했습니다. 그런데 블로그에 적용해 보니 부정 글이 1.4%밖에 없었고, 가게별 블로그 감성과 구글 평점의 상관도 0.15로 약했습니다. 블로그가 원래 칭찬 위주라서 그렇습니다. 그래서 호불호 지수는 점수에 20%만 반영하고 참고용으로 표시했습니다. 결과가 기대와 달랐지만, 검증해서 확인했다는 점이 중요하다고 생각합니다.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 11</p>
+<aside>감성분석은 구글 리뷰 별점을 정답으로 학습했습니다. 4~5점은 긍정, 1~2점은 부정입니다. 교차검증 AUC가 0.96으로 모델 자체는 정확했습니다. 그런데 블로그에 적용해 보니 부정 글이 3.0%밖에 없었고, 가게별 블로그 감성과 구글 평점의 순위상관도 0.17로 약했습니다. 블로그가 원래 칭찬 위주라서 그렇습니다. 그래서 호불호 지수는 점수에 20%만 반영하고 참고용으로 표시했습니다. 결과가 기대와 달랐지만, 검증해서 확인했다는 점이 중요하다고 생각합니다.</aside>
 </section>
 <section id="search" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:52px">
 <div style="display:flex;flex-direction:column;gap:16px">
@@ -296,7 +318,7 @@
 </div>
 </div>
 <div style="flex:1;display:flex;flex-direction:column;gap:18px">
-<p style="font-size:26px;color:#57534e">시험 질문과 상위 결과</p>
+<p style="font-size:26px;color:#57534e">시험 질문과 상위 결과 (연희동 386곳 기준)</p>
 <div style="display:flex;flex-direction:column;gap:6px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:18px;padding:26px 30px">
 <p style="font-size:30px;font-weight:700">“회식 고기집”</p>
 <p style="font-size:28px;color:#57534e">왕소금구이 · 한우명가 · 꼬들집</p>
@@ -311,7 +333,7 @@
 </div>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 11</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 12</p>
 <aside>네 번째는 자연어 검색입니다. 질문 문장과 가게 블로그 글을 같은 e5 임베딩 공간에 놓고 가까운 순으로 찾습니다. 처음엔 의미 유사도만 썼는데, 블로그 글이 두루뭉술한 몇몇 가게가 어떤 질문에든 위로 올라왔습니다. 그래서 질문 단어가 가게 키워드와 맞거나, 주차나 반려견 같은 조건이 가게 정보와 맞으면 가산점을 주는 하이브리드 방식으로 바꿨습니다. 회식 고기집을 검색하면 고깃집들이, 반려견 동반 브런치를 검색하면 브런치 카페들이 나옵니다.</aside>
 </section>
 <section id="searchdemo" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:44px">
@@ -320,19 +342,46 @@
 <h2 style="font-size:64px;font-weight:800;line-height:1.2;letter-spacing:-2px">“분위기 좋은 술집”을 검색하면</h2>
 </div>
 <div style="display:flex;gap:48px">
-<img src="ai-search.png" alt="AI 검색 화면: '분위기 좋은 술집' 검색 결과 30곳이 목록과 지도에 표시되고, 1위는 코블러 연희" style="width:1180px;height:630px;object-fit:contain;background:#efe9e1;border-radius:20px">
+<img src="ai-search.png" alt="AI 검색 화면: '분위기 좋은 술집' 검색 결과 30곳이 목록과 지도에 표시되고, 1위는 홍대의 예쁜술집 예술" style="width:1120px;height:630px;object-fit:contain;background:#efe9e1;border-radius:20px">
 <div style="flex:1;display:flex;flex-direction:column;gap:22px">
 <div style="display:flex;flex-direction:column;gap:6px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:18px;padding:24px 26px">
 <p style="font-size:26px;color:#57534e">1위</p>
-<p style="font-size:34px;font-weight:800">코블러 연희</p>
-<p style="font-size:26px;color:#57534e">★4.7 · 키워드 ‘술집’</p>
+<p style="font-size:34px;font-weight:800">예쁜술집 예술</p>
+<p style="font-size:26px;color:#57534e">홍대 · 맛 추정 4.5(블로그 기반)</p>
 </div>
 <p style="font-size:28px;line-height:1.5;color:#57534e">의미가 가까운 30곳을 목록과 지도에 함께 표시</p>
 <p style="font-size:28px;line-height:1.5;color:#57534e">e5 모델을 브라우저에서 실행해 서버 없이 동작</p>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 12</p>
-<aside>실제로 배포한 지도에서 검색한 화면입니다. AI 검색을 켜고 '분위기 좋은 술집'을 입력하면, 블로그 글의 의미가 가까운 30곳이 목록과 지도에 함께 나옵니다. 1위는 블로그 키워드에 '술집'이 있는 코블러 연희입니다. 이 검색은 서버 없이 브라우저 안에서 e5 모델을 내려받아 돌립니다. 처음 한 번은 모델을 받느라 조금 기다려야 합니다.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 13</p>
+<aside>실제로 배포한 지도에서 검색한 화면입니다. AI 검색을 켜고 '분위기 좋은 술집'을 입력하면, 블로그 글의 의미가 가까운 30곳이 목록과 지도에 함께 나옵니다. 1위는 홍대의 예쁜술집 예술이고, 블로그로 추정한 맛 점수 4.5가 함께 표시됩니다. 결과는 6개 상권 전체에서 고릅니다. 이 검색은 서버 없이 브라우저 안에서 e5 모델을 내려받아 돌립니다. 처음 한 번은 모델을 받느라 조금 기다려야 합니다.</aside>
+</section>
+<section id="taste" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:56px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<p style="font-size:28px;font-weight:700;color:#c2410c">⑤ 평점 보정 · 맛 점수 추정</p>
+<h2 style="font-size:64px;font-weight:800;line-height:1.2;letter-spacing:-2px">구글 평점이 없는 가게는 블로그로 맛을 추정한다</h2>
+</div>
+<p style="font-size:30px;line-height:1.5;color:#57534e">구글 리뷰가 10개 이상인 563곳으로 5겹 교차검증: 블로그 감성·글 수·업태·지역·임베딩으로 구글 베이지안 평점을 예측</p>
+<div style="display:flex;gap:32px">
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:24px;padding:44px">
+<p style="font-size:100px;font-weight:800;line-height:1;letter-spacing:-3px">0.15</p>
+<p style="font-size:30px;font-weight:700">감성 평균만</p>
+<p style="font-size:26px;line-height:1.5;color:#57534e">구글 평점과의 순위상관</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:24px;padding:44px">
+<p style="font-size:100px;font-weight:800;line-height:1;letter-spacing:-3px">0.28</p>
+<p style="font-size:30px;font-weight:700">+ 글 수·업태·지역</p>
+<p style="font-size:26px;line-height:1.5;color:#57534e">순위상관</p>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:12px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:24px;padding:44px">
+<p style="font-size:100px;font-weight:800;line-height:1;letter-spacing:-3px;color:#c2410c">0.34</p>
+<p style="font-size:30px;font-weight:700">+ 블로그 임베딩</p>
+<p style="font-size:26px;line-height:1.5;color:#57534e">순위상관, 평균 절대오차 0.19점 (전부 평균으로 예측하면 0.21점)</p>
+</div>
+</div>
+<p style="font-size:30px;font-weight:700;background:#1c1917;color:#f7f4ef;padding:22px 32px;border-radius:16px">→ 개선은 작다: 추정 점수는 구글 평점과 구분해 “블로그 기반 추정”으로 표시</p>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 14</p>
+<aside>구글 평점은 무료 한도 때문에 일부 가게만 받을 수 있었습니다. 그래서 평점이 없는 가게는 블로그로 맛 점수를 추정했습니다. 구글 리뷰가 10개 이상인 563곳에서 5겹 교차검증을 했는데, 블로그 감성 평균만 쓰면 구글 평점과 순위상관이 0.15, 글 수와 업태, 지역을 더하면 0.28, 블로그 임베딩까지 쓰면 0.34였습니다. 모두 평균으로 예측했을 때 평균 오차가 0.21점인데 모델은 0.19점이라 개선이 크지 않습니다. 그래서 지도에서는 이 점수를 구글 평점과 구분해 블로그 기반 추정으로 표시합니다.</aside>
 </section>
 <section id="rating" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:52px">
 <div style="display:flex;flex-direction:column;gap:16px">
@@ -342,19 +391,19 @@
 <div style="display:flex;gap:48px">
 <div style="flex:1;display:flex;flex-direction:column;gap:22px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:24px;padding:44px">
 <h3 style="font-size:34px;font-weight:700">베이지안 평점</h3>
-<p style="font-size:30px;font-weight:700;background:#efe9e1;padding:18px 22px;border-radius:12px">(20 × 4.22 + n × r) ÷ (20 + n)</p>
-<p style="font-size:26px;color:#57534e">4.22 = 연희동 평균, n = 리뷰 수, r = 구글 평점</p>
+<p style="font-size:30px;font-weight:700;background:#efe9e1;padding:18px 22px;border-radius:12px">(20 × 4.44 + n × r) ÷ (20 + n)</p>
+<p style="font-size:26px;color:#57534e">4.44 = 분석 지역 평균, n = 리뷰 수, r = 구글 평점</p>
 <table style="font-size:28px;color:#1c1917">
 <tr style="background:#efe9e1"><th style="width:40%">리뷰</th><th style="width:30%;text-align:right">구글</th><th style="width:30%;text-align:right">보정</th></tr>
-<tr><td>3개</td><td style="text-align:right">5.0</td><td style="text-align:right">4.32</td></tr>
+<tr><td>3개</td><td style="text-align:right">5.0</td><td style="text-align:right">4.51</td></tr>
 <tr><td>1,144개</td><td style="text-align:right">4.2</td><td style="text-align:right">4.20</td></tr>
 </table>
 </div>
 <div style="flex:1.15;display:flex;flex-direction:column;gap:20px">
 <div style="display:flex;gap:16px">
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:18px;padding:26px"><p style="font-size:56px;font-weight:800;line-height:1">42%</p><p style="font-size:26px;color:#57534e">예약 방법</p></div>
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:18px;padding:26px"><p style="font-size:56px;font-weight:800;line-height:1">72%</p><p style="font-size:26px;color:#57534e">웨이팅</p></div>
-<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:18px;padding:26px"><p style="font-size:56px;font-weight:800;line-height:1">45%</p><p style="font-size:26px;color:#57534e">주차</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:18px;padding:26px"><p style="font-size:56px;font-weight:800;line-height:1">35%</p><p style="font-size:26px;color:#57534e">예약 방법</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:18px;padding:26px"><p style="font-size:56px;font-weight:800;line-height:1">77%</p><p style="font-size:26px;color:#57534e">웨이팅</p></div>
+<div style="flex:1;display:flex;flex-direction:column;gap:6px;background:#fdfbf8;border:1px solid #e7e2da;border-radius:18px;padding:26px"><p style="font-size:56px;font-weight:800;line-height:1">47%</p><p style="font-size:26px;color:#57534e">주차</p></div>
 </div>
 <p style="font-size:26px;line-height:1.5;color:#57534e">정보가 있는 가게 비율. 블로그에서 캐치테이블·테이블링·네이버 예약·전화·예약 불가 언급을 규칙으로 뽑고 근거 글 링크와 최근 언급일을 함께 표시</p>
 <div style="display:flex;flex-direction:column;gap:8px;background:#1c1917;color:#f7f4ef;border-radius:18px;padding:28px 32px">
@@ -363,25 +412,26 @@
 </div>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 13</p>
-<aside>다섯 번째는 평점 보정입니다. 리뷰가 적은 가게의 평점을 연희동 평균 쪽으로 당기는 베이지안 평균을 썼습니다. 리뷰 3개에 5점인 가게는 4.32점이 되고, 리뷰가 1,144개인 가게는 거의 그대로입니다. 그리고 실제로 갈 때 필요한 예약 방법, 웨이팅, 주차 정보를 블로그와 구글에서 모았습니다. 이 과정에서 인허가 데이터에는 아직 영업 중으로 남아 있지만 실제로는 2022년에 문을 닫은 목란을 찾아내서 경고를 붙였습니다.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 15</p>
+<aside>다섯 번째는 평점 보정입니다. 리뷰가 적은 가게의 평점을 분석 지역 평균 쪽으로 당기는 베이지안 평균을 썼습니다. 리뷰 3개에 5점인 가게는 4.51점이 되고, 리뷰가 1,144개인 가게는 거의 그대로입니다. 그리고 실제로 갈 때 필요한 예약 방법, 웨이팅, 주차 정보를 블로그와 구글에서 모았습니다. 이 과정에서 인허가 데이터에는 아직 영업 중으로 남아 있지만 실제로는 2022년에 문을 닫은 목란을 찾아내서 경고를 붙였습니다.</aside>
 </section>
 <section id="demo" data-transition="fade" style="background:#1c1917;color:#f7f4ef;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px;display:flex;flex-direction:column;gap:48px">
 <div style="display:flex;flex-direction:column;gap:16px">
 <p style="font-size:28px;font-weight:700;color:#ff8a3d">데모</p>
-<h2 style="font-size:64px;font-weight:800;line-height:1.2;letter-spacing:-2px">연희동 식당 AI 지도</h2>
+<h2 style="font-size:64px;font-weight:800;line-height:1.2;letter-spacing:-2px">서울 식당 AI 지도</h2>
 </div>
 <div style="display:flex;gap:56px">
-<img src="screenshot.png" alt="연희동 식당 AI 지도 화면: 왼쪽에 검색창·필터·추천순 목록, 오른쪽에 추천 등급별 색 마커가 찍힌 연희동 지도" style="width:1120px;height:600px;object-fit:contain;background:#f7f4ef;border-radius:20px">
+<img src="screenshot.png" alt="서울 식당 AI 지도 화면: 왼쪽에 AI 분석 지역·서울 전체 탭, 검색창·필터·오늘의 추천·추천순 목록, 오른쪽에 추천 등급별 색 마커가 찍힌 연희·연남·신촌·홍대·합정·상수 지도" style="width:1066px;height:600px;object-fit:contain;background:#f7f4ef;border-radius:20px">
 <div style="flex:1;display:flex;flex-direction:column;gap:22px">
 <p style="font-size:30px;line-height:1.45;color:#e7e2da">추천순 · 맛 · 생존력 · 호불호 정렬</p>
 <p style="font-size:30px;line-height:1.45;color:#e7e2da">지금 영업 중 · 웨이팅 적음 · 주차 · 예약 필터</p>
 <p style="font-size:30px;line-height:1.45;color:#e7e2da">문장으로 AI 검색</p>
 <p style="font-size:30px;line-height:1.45;color:#e7e2da">가게별 점수 근거와 예약 근거 글 링크</p>
+<p style="font-size:30px;line-height:1.45;color:#e7e2da">서울 전체 118,351곳은 생존력으로 보기</p>
 <p style="font-size:30px;line-height:1.45;color:#e7e2da">분석 방법과 한계를 지도 안에서 공개</p>
 </div>
 </div>
-<aside>이제 실제 지도를 보여드리겠습니다. 시연 순서는 이렇게 하면 좋습니다. 첫째, 추천순 목록과 지도 색깔을 보여줍니다. 둘째, 가게 하나를 눌러 맛·생존력·호불호 점수와 생존력 요인, 예약 근거 글을 보여줍니다. 셋째, 지금 영업 중과 주차 필터를 켭니다. 넷째, AI 검색을 켜고 '회식 고기집'을 검색합니다. 마지막으로 분석 방법 창을 열어 검증 수치를 보여줍니다.</aside>
+<aside>이제 실제 지도를 보여드리겠습니다. 시연 순서는 이렇게 하면 좋습니다. 첫째, 추천순 목록과 지도 색깔을 보여줍니다. 둘째, 가게 하나를 눌러 맛·생존력·호불호 점수와 생존력 요인, 예약 근거 글을 보여줍니다. 셋째, 지금 영업 중과 주차 필터를 켭니다. 넷째, AI 검색을 켜고 '회식 고기집'을 검색합니다. 다섯째, 위쪽 탭에서 서울 전체를 눌러 구별 생존력을 보여줍니다. 마지막으로 분석 방법 창을 열어 검증 수치를 보여줍니다.</aside>
 </section>
 <section id="limits" data-transition="fade" style="background:#f7f4ef;color:#1c1917;font-family:'Noto Sans KR', Arial, sans-serif;padding:128px 128px 160px;display:flex;flex-direction:column;gap:52px">
 <div style="display:flex;flex-direction:column;gap:16px">
@@ -395,6 +445,7 @@
 <ul>
 <li>인허가 정보만으론 폐업 예측에 한계 (AUC 0.63)</li>
 <li>블로그는 긍정 편향이라 호불호는 참고용</li>
+<li>구글 평점은 무료 한도로 일부 가게만, 나머지 맛 점수는 블로그 추정(순위상관 0.34)</li>
 <li>흔한 상호는 다른 가게 글이 섞임</li>
 <li>예약·웨이팅 정보는 지금과 다를 수 있음</li>
 </ul>
@@ -412,8 +463,8 @@
 </div>
 </div>
 </div>
-<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">연희동 식당 AI 지도 · 15</p>
-<aside>한계도 분명합니다. 인허가 정보만으로는 폐업을 어느 정도까지만 예측할 수 있고, 블로그는 긍정 편향이 강합니다. 흔한 상호는 다른 가게 글이 섞이고, 예약 정보는 바뀔 수 있습니다. 배운 점도 있습니다. 처음 생존모델을 만들었을 때 모든 가게의 위험이 100%로 나왔는데, 관찰이 끝나지 않은 마지막 구간에서 폐업한 가게만 남는 선택 편향 때문이었습니다. 또 1990년 이전 개업 가게는 일찍 폐업한 곳의 기록이 없어서 생존기간이 부풀려진다는 것도 EDA에서 발견했습니다. 감성분석처럼 모델이 정확해도 데이터 자체의 편향은 검증해야만 보인다는 걸 배웠습니다.</aside>
+<p style="position:absolute;left:128px;bottom:64px;width:1664px;font-size:24px;color:#8a817a">서울 식당 AI 지도 · 17</p>
+<aside>한계도 분명합니다. 인허가 정보만으로는 폐업을 어느 정도까지만 예측할 수 있고, 블로그는 긍정 편향이 강하고, 구글 평점은 무료 한도 때문에 일부 가게만 받아서 나머지 맛 점수는 블로그로 추정했는데 순위상관이 0.34로 약합니다. 흔한 상호는 다른 가게 글이 섞이고, 예약 정보는 바뀔 수 있습니다. 배운 점도 있습니다. 처음 생존모델을 만들었을 때 모든 가게의 위험이 100%로 나왔는데, 관찰이 끝나지 않은 마지막 구간에서 폐업한 가게만 남는 선택 편향 때문이었습니다. 또 1990년 이전 개업 가게는 일찍 폐업한 곳의 기록이 없어서 생존기간이 부풀려진다는 것도 EDA에서 발견했습니다. 감성분석처럼 모델이 정확해도 데이터 자체의 편향은 검증해야만 보인다는 걸 배웠습니다.</aside>
 </section>
 <section id="end" data-transition="fade" style="display:flex; flex-direction:column; gap:40px; justify-content:center; padding:128px; background:#1c1917">
   <div style="position:absolute; top:128px; left:128px; width:120px; height:12px; display:flex; flex-direction:column; background:#e8590c; border-radius:6px">
@@ -422,8 +473,8 @@
   <p style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:44px; line-height:1.45; color:#d6d3d1">질문 받겠습니다</p>
   <div style="display:flex; flex-direction:column; gap:12px">
     <p style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:30px; color:#a8a29e">지도</p>
-    <p style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:36px; font-weight:700; color:#ff8a3d"><a href="https://oojiyn5.github.io/yeonhui-food-map/">oojiyn5.github.io/yeonhui-food-map</a></p>
-    <p style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:26px; color:#a8a29e">코드 · 발표 자료: github.com/Oojiyn5/yeonhui-food-map</p>
+    <p style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:36px; font-weight:700; color:#ff8a3d"><a href="https://oojiyn5.github.io/seoul-food-map/">oojiyn5.github.io/seoul-food-map</a></p>
+    <p style="font-family:'Noto Sans KR', Arial, sans-serif; font-size:26px; color:#a8a29e">코드 · 발표 자료: github.com/Oojiyn5/seoul-food-map</p>
   </div>
   <p style="position:absolute; bottom:96px; left:128px; width:1400px; font-family:'Noto Sans KR', Arial, sans-serif; font-size:26px; color:#8a817a">데이터: 공공데이터포털 · 식품안전나라 · Google Places · 네이버 검색 API · OpenStreetMap</p>
   <aside>들어주셔서 감사합니다. 질문 받겠습니다. 예상 질문으로는 왜 AUC가 0.63에 그쳤는지, 왜 크롤링을 하지 않았는지, 추천 점수 가중치를 어떻게 정했는지가 있을 것 같습니다. 가중치 50, 30, 20은 맛을 가장 중시하되 생존력을 함께 보고, 신뢰도가 낮은 호불호는 작게 반영하려고 정한 값입니다.</aside>
