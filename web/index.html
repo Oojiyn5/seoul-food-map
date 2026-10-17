@@ -4,6 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>서울 식당 AI 지도</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='10' fill='%23e8590c'/%3E%3Cg transform='translate(5 5)' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z'/%3E%3Cpath d='M9.5 8v3.5M12 8v3.5M14.5 8v3.5M12 11.5V14'/%3E%3C/g%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@4.7.1/dist/maplibre-gl.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -136,6 +137,7 @@ aside { display: flex; flex-direction: column; background: var(--panel); border-
 .tag { font-size: 11.5px; padding: 2px 8px; border-radius: 6px; background: var(--chip); color: var(--ink-2); }
 .tag.kw { background: transparent; border: 1px solid var(--line); }
 .tag.area { background: transparent; color: var(--accent-ink); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+.tag.lot { color: var(--s3); font-weight: 600; }   /* 가게 주차장이 아니라 근처 공영주차장: 파란 글씨로 구분 */
 .tag.good { background: var(--good-soft); color: var(--good); }
 .tag.warn { background: var(--warn-soft); color: var(--warn); }
 .tag.bad { background: var(--bad-soft); color: var(--bad); }
@@ -458,7 +460,8 @@ function prepare(rows) {
     const info = r.info || {};
     r.flags = {
       lowWait: info.waiting === "드묾",
-      parking: /가능|공영/.test(info.parking || ""),
+      parking: /가능|공영/.test(info.parking || ""),                   // 필터는 근처 공영주차장까지 포함
+      lotOnly: !/^가능/.test(info.parking || "") && /공영/.test(info.parking || ""),   // 가게 주차장 없이 근처 공영주차장만
       reserve: /캐치테이블|테이블링|네이버 예약|전화 예약|예약 가능|예약 필수/.test(info.reserve || "") && !/^예약 불가/.test(info.reserve || ""),
     };
     r.kwText = [r.name, r.category, r.main_food, r.area, ...(r.blog?.keywords || [])].filter(Boolean).join(" ").toLowerCase();
@@ -633,7 +636,8 @@ function badges(r) {
   if (r.google?.status === "CLOSED_TEMPORARILY") out.push('<span class="tag warn">임시 휴업</span>');
   if (i.waiting === "잦음") out.push('<span class="tag warn">웨이팅 잦음</span>');
   else if (i.waiting === "드묾") out.push('<span class="tag good">웨이팅 적음</span>');
-  if (r.flags.parking) out.push('<span class="tag">주차</span>');
+  if (r.flags.lotOnly) out.push('<span class="tag lot">근처 공영주차장</span>');
+  else if (r.flags.parking) out.push('<span class="tag">주차</span>');
   if (r.flags.reserve) out.push('<span class="tag">예약</span>');
   return out;
 }
@@ -974,7 +978,7 @@ function detail(r) {
     <div class="rows">
       ${row("예약", esc(i.reserve || "") || '<span style="color:var(--muted)">정보 없음</span>', links)}
       ${row("웨이팅", i.waiting ? esc(i.waiting) : '<span style="color:var(--muted)">정보 부족</span>', i.busy_when ? `몰리는 때: ${esc(i.busy_when)}` : "")}
-      ${row("주차", esc(i.parking || "") || '<span style="color:var(--muted)">정보 없음</span>')}
+      ${row("주차", (r.flags.lotOnly ? `<span style="color:var(--s3);font-weight:600">${esc(i.parking)}</span>` : esc(i.parking || "")) || '<span style="color:var(--muted)">정보 없음</span>')}
       ${row("전화", i.phone ? `<a href="tel:${esc(i.phone)}">${esc(i.phone)}</a>` : "")}
       ${row("영업시간", (r.open === true ? '<b style="color:var(--good)">지금 영업 중</b>' : r.open === false ? '<b style="color:var(--muted)">지금은 영업 시간이 아니에요</b>' : "") + hoursTable(i.hours))}
       ${row("편의", extras.join(" · "))}
