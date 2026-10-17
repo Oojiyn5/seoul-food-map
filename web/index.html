@@ -173,7 +173,7 @@ footer { padding: 10px 20px; border-top: 1px solid var(--line); font-size: 11px;
 
 /* ---------- 상세 패널 ---------- */
 .detail {
-  position: absolute; top: 14px; right: 14px; bottom: 14px; width: 380px; z-index: 600; background: var(--panel);
+  position: absolute; top: 14px; right: 14px; bottom: 14px; width: 380px; z-index: 1100; background: var(--panel);   /* Leaflet 확대 버튼·출처(z-index 1000)보다 위 */
   border-radius: 18px; box-shadow: var(--shadow-lg); display: flex; flex-direction: column; overflow: hidden;
   transform: translateX(calc(100% + 24px)); transition: transform .25s cubic-bezier(.2,.8,.2,1);
 }
@@ -203,7 +203,7 @@ h3 { font-size: 13px; margin: 22px 0 8px; color: var(--ink-2); letter-spacing: -
 .r .k { color: var(--muted); font-size: 12.5px; padding-top: 1px; }
 .r .sub { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; }
 .hours { display: grid; grid-template-columns: auto 1fr; gap: 1px 10px; font-size: 12.5px; }
-.hours .today { font-weight: 750; color: var(--ink); }
+.hours span.now { font-weight: 750; color: var(--ink); }   /* .today는 '오늘의 추천' 섹션 클래스라 패딩이 묻어나서 따로 씀 */
 .hours span:nth-child(odd) { color: var(--muted); }
 .factors { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .factor { border-radius: 12px; padding: 9px 11px; font-size: 12.5px; }
@@ -240,6 +240,10 @@ dialog.about::backdrop { background: rgba(20, 18, 16, .45); backdrop-filter: blu
   .app { grid-template-columns: 1fr; grid-template-rows: 42vh 1fr; grid-template-rows: 42dvh 1fr; }
   .mapwrap { order: 1; }
   aside { order: 2; border-right: 0; border-radius: 18px 18px 0 0; margin-top: -14px; box-shadow: 0 -4px 16px rgba(0,0,0,.08); }
+  /* 모바일: 헤더(검색·필터·추천)가 하단 영역을 다 차지해 목록 스크롤 영역이 사라지므로, 사이드바 전체를 스크롤시킨다 */
+  aside { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  aside > * { flex-shrink: 0; }
+  .list { overflow: visible; flex: none; }
   .brand { padding: 14px 16px 0; } .brand p { display: none; }
   .modes { margin: 10px 16px 0; }
   .searchbox { margin: 10px 16px 0; } .examples { margin: 2px 16px 0; } .ai-status { margin: 4px 18px 0; }
@@ -759,6 +763,10 @@ function ensureGuFiles(bounds) {
       })));
       state.seoul.loading.delete(g.file);
       if (state.mode === "seoul") render();
+    }).catch((e) => {
+      // 실패한 구는 다음 지도 이동 때 다시 받는다 (여기서 render하면 계속 실패할 때 무한 재시도)
+      console.error("구 데이터를 못 불러왔어요", g.file, e);
+      state.seoul.loading.delete(g.file);
     });
   }
   return need.length;
@@ -921,7 +929,7 @@ function hoursTable(h) {
   const today = DAYS[new Date().getDay()];
   return `<div class="hours">${h.split(" / ").map((line) => {
     const [d, ...rest] = line.split(": ");
-    const cls = d === today ? ' class="today"' : "";
+    const cls = d === today ? ' class="now"' : "";
     return `<span${cls}>${esc(d.replace("요일", ""))}</span><span${cls}>${esc(rest.join(": "))}</span>`;
   }).join("")}</div>`;
 }
