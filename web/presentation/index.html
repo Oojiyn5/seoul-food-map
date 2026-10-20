@@ -9,9 +9,9 @@
   html, body { margin: 0; height: 100%; background: #0f0e0d; font-family: 'Noto Sans KR', Arial, sans-serif; }
   .stage { position: fixed; inset: 0; display: grid; place-items: center; overflow: hidden; }
   section { position: absolute; width: 1920px; height: 1080px; box-sizing: border-box; overflow: hidden;
-             transform-origin: center center; display: none; word-break: keep-all; }
-  section.on { display: flex; }
-  section[style*="display:grid"].on { display: grid; }
+             transform-origin: center center; display: none !important; word-break: keep-all; }
+  section.on { display: flex !important; }
+  section[style*="display:grid"].on { display: grid !important; }
   section p, section h1, section h2, section h3, section ul { margin: 0; }
   section ul { padding-left: 1.2em; display: flex; flex-direction: column; gap: 10px; }
   section table { border-collapse: separate; border-spacing: 0; width: 100%; overflow: hidden; }
